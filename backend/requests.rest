@@ -35,3 +35,14 @@ Content-Type: application/json
   "user_id": 1,
   "subject_name": "Physics"
 }
+
+### Add past attendance
+POST http://localhost:5000/api/attendance
+Content-Type: application/json
+
+{
+  "student_id": 1,
+  "subject_id": 1,
+  "status": "true",
+  "date": "2025-09-10"
+}

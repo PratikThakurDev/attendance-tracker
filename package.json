@@ -1,0 +1,26 @@
+{
+  "name": "attendance-tracker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PratikThakurDev/attendance-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PratikThakurDev/attendance-tracker/issues"
+  },
+  "homepage": "https://github.com/PratikThakurDev/attendance-tracker#readme",
+  "description": "",
+  "devDependencies": {
+    "prettier-eslint": "^16.4.2"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
