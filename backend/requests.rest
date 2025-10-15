@@ -46,3 +46,6 @@ Content-Type: application/json
   "status": "true",
   "date": "2025-09-10"
 }
+
+### Get attendance summary for a student
+GET http://localhost:5000/api/attendance/summary/1
