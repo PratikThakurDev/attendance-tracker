@@ -5,8 +5,9 @@ import LoginForm from "./pages/loginForm";
 
 function App() {
   return <>
+    <SignUpForm/>
     <LoginForm/> ;
-  </>;
+</>
 }
 
 export default App;
