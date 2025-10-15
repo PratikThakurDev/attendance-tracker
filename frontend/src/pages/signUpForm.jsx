@@ -19,7 +19,7 @@ function SignUpForm() {
     e.preventDefault();
     try {
       const payload = {
-        name: `${form.firstName} ${form.lastName}`,
+        name: form.username,
         email: form.email,
         password: form.password,
       };
