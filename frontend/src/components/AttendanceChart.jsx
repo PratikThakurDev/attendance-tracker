@@ -31,17 +31,4 @@ function ClassesAttendedChart({ data }) {
   );
 }
 
-// Example usage with default data
-ClassesAttendedChart.defaultProps = {
-  data: [
-    { day: "1", classesAttended: 1 },
-    { day: "2", classesAttended: 2 },
-    { day: "3", classesAttended: 0 },
-    { day: "4", classesAttended: 1 },
-    { day: "5", classesAttended: 3 },
-    { day: "6", classesAttended: 0 },
-    { day: "7", classesAttended: 2 },
-  ],
-};
-
 export default ClassesAttendedChart;

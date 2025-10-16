@@ -7,9 +7,10 @@ import CalendarWidget from "../components/CalendarWidget";
 import LogTable from "../components/LogTable";
 import MarkAttendanceModal from "../components/MarkAttendanceModal";
 import { fetchSummary, fetchAttendanceBySubject } from "../utils/api";
+import {jwtDecode} from "jwt-decode"; // ✅ stable import
 
 function Dashboard() {
-  const userId = 1; // later: replace with logged-in user ID
+  const [userId, setUserId] = useState(null);
   const [summary, setSummary] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [attendanceLogs, setAttendanceLogs] = useState([]);
@@ -17,8 +18,23 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ Fetch summary for user
+  // ✅ Extract userId from token
+ useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const decoded = jwtDecode(token);
+    setUserId(decoded.id);
+  } catch (err) {
+    console.error("Invalid token", err);
+  }
+}, []);
+
+  // ✅ Fetch summary once userId is set
   useEffect(() => {
+    if (!userId) return;
+
     const loadSummary = async () => {
       try {
         const res = await fetchSummary(userId);
@@ -29,31 +45,28 @@ function Dashboard() {
         setLoading(false);
       }
     };
+
     loadSummary();
   }, [userId]);
 
   // ✅ Fetch attendance logs when subject changes
   useEffect(() => {
-    const loadAttendance = async () => {
-      if (!selectedSubject) {
-        setAttendanceLogs([]);
-        setChartData([]);
-        return;
-      }
+    if (!selectedSubject) {
+      setAttendanceLogs([]);
+      setChartData([]);
+      return;
+    }
 
+    const loadAttendance = async () => {
       try {
         const logs = await fetchAttendanceBySubject(selectedSubject);
         setAttendanceLogs(logs);
 
-        // transform logs → chart-friendly format
         const dailyMap = {};
         logs.forEach((log) => {
           const day = new Date(log.attendance_date).toLocaleDateString(
             "en-IN",
-            {
-              day: "numeric",
-              month: "short",
-            }
+            { day: "numeric", month: "short" }
           );
           if (!dailyMap[day]) dailyMap[day] = 0;
           if (log.status) dailyMap[day] += 1;
@@ -69,6 +82,7 @@ function Dashboard() {
         console.error("Error fetching attendance:", err.message);
       }
     };
+
     loadAttendance();
   }, [selectedSubject]);
 
@@ -99,16 +113,8 @@ function Dashboard() {
 
         {/* Cards */}
         <div className="grid grid-cols-4 gap-6">
-          <Card
-            title="Avg Attendance"
-            value={`${avgAttendance}%`}
-            subtitle="Across all subjects"
-          />
-          <Card
-            title="Subjects"
-            value={summary.length}
-            subtitle="Total Enrolled"
-          />
+          <Card title="Avg Attendance" value={`${avgAttendance}%`} subtitle="Across all subjects" />
+          <Card title="Subjects" value={summary.length} subtitle="Total Enrolled" />
           <Card
             title="Highest Attendance"
             value={
@@ -162,27 +168,30 @@ function Dashboard() {
           <LogTable logs={attendanceLogs} />
         </div>
       </main>
+
       <MarkAttendanceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         subjectId={selectedSubject}
         userId={userId}
-        onSuccess={() => {
-          // refresh attendance after marking
-          const reload = async () => {
-            const logs = await fetchAttendanceBySubject(selectedSubject);
-            setAttendanceLogs(logs);
-            setChartData(
-              logs.map((log) => ({
-                day: new Date(log.attendance_date).toLocaleDateString("en-IN", {
-                  day: "numeric",
-                  month: "short",
-                }),
-                classesAttended: log.status ? 1 : 0,
-              }))
+        onSuccess={async () => {
+          const logs = await fetchAttendanceBySubject(selectedSubject);
+          setAttendanceLogs(logs);
+          const dailyMap = {};
+          logs.forEach((log) => {
+            const day = new Date(log.attendance_date).toLocaleDateString(
+              "en-IN",
+              { day: "numeric", month: "short" }
             );
-          };
-          reload();
+            if (!dailyMap[day]) dailyMap[day] = 0;
+            if (log.status) dailyMap[day] += 1;
+          });
+          setChartData(
+            Object.keys(dailyMap).map((day) => ({
+              day,
+              classesAttended: dailyMap[day],
+            }))
+          );
         }}
       />
     </div>

@@ -31,14 +31,4 @@ function LogTable({ logs }) {
   );
 }
 
-// Example usage
-LogTable.defaultProps = {
-  logs: [
-    { date: "2025-10-01", classes: ["Math", "Physics"], canceled: 0 },
-    { date: "2025-10-02", classes: ["English"], canceled: 0 },
-    { date: "2025-10-03", classes: [], canceled: 2 },
-    { date: "2025-10-04", classes: ["Chemistry", "Biology"], canceled: 0 },
-  ],
-};
-
 export default LogTable;

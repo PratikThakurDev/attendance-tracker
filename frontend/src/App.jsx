@@ -1,17 +1,36 @@
-import { useState } from "react";
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import SignUpForm from "./pages/signUpForm";
 import LoginForm from "./pages/loginForm";
-import DashBoard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard";
+import { setAuthToken } from "./utils/api";
+
+// ✅ PrivateRoute component
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/" replace />;
+};
 
 function App() {
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) setAuthToken(token);
+  }, []);
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LoginForm />} />
         <Route path="/signup" element={<SignUpForm />} />
-        <Route path="/dashboard" element={<DashBoard />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
