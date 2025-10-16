@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const router = express.Router();
 
-router.post("/register", async (req, res) => {
+router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const hashed = await bcrypt.hash(password, 10);
