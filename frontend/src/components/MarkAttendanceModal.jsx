@@ -26,8 +26,8 @@ function MarkAttendanceModal({ isOpen, onClose, subjectId, userId, onSuccess }) 
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-[#18181b] p-6 rounded-xl w-96 border border-[#1fd6c1]/30">
+    <div className="fixed inset-0 flex items-center justify-center  z-50">
+      <div className="bg-black/90 p-6 rounded-xl w-96 border border-[#1fd6c1]/30">
         <h3 className="text-lg font-semibold mb-4">Mark Attendance</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

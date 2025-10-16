@@ -1,61 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { addSubject } from "../utils/api";
 
-function AddSubjectModal({ isOpen, onClose, onSuccess }) {
+function AddSubjectModal({ isOpen, onClose, userId, onSuccess }) {
   const [subjectName, setSubjectName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef(null);
+  
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
-  if (!isOpen) return null;
-
-  const handleSubmit = async (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
-    if (!subjectName.trim()) return alert("Enter subject name");
-
+    if (!subjectName.trim()) {
+      setError("Subject name cannot be empty");
+      return;
+    }
     setLoading(true);
+    setError("");
+    
     try {
-      // Replace with your API call
-      await fetch("/api/subjects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject_name: subjectName }),
-      });
-
+      const newSubject = await addSubject(userId, subjectName.trim());
+      onSuccess(newSubject);
       setSubjectName("");
       onClose();
-      onSuccess();
     } catch (err) {
-      console.error("Error adding subject:", err);
-      alert("Failed to add subject");
+      console.error(err);
+      setError(err.response?.data?.error || "Failed to add subject");
     } finally {
       setLoading(false);
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-[#0e1117] p-6 rounded-lg w-96">
-        <h2 className="text-xl font-semibold mb-4 text-white">Add Subject</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+      <div className="bg-[#18181b] p-6 rounded-lg w-96">
+        <h2 className="text-lg font-semibold mb-4">Add New Subject</h2>
+        <form onSubmit={handleAdd}>
           <input
             type="text"
+            placeholder="Subject Name"
             value={subjectName}
+            ref={inputRef}
             onChange={(e) => setSubjectName(e.target.value)}
-            placeholder="Subject name"
-            className="w-full px-3 py-2 rounded bg-[#18181b] border border-gray-600 text-white"
+            className="w-full p-2 mb-2 rounded-lg bg-[#0e1117] border border-gray-600"
           />
-          <div className="flex justify-end gap-3">
+          {error && <p className="text-red-500 mb-2">{error}</p>}
+          <div className="flex justify-end gap-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700"
+              className="px-4 py-2 bg-gray-700 rounded-lg"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
+              className="px-4 py-2 bg-[#1fd6c1] text-black rounded-lg"
               disabled={loading}
-              className="px-4 py-2 rounded bg-[#1fd6c1] text-black font-semibold hover:bg-[#17b9a9]"
             >
-              {loading ? "Adding..." : "Add"}
+              {loading ? "Adding..." : "Add Subject"}
             </button>
           </div>
         </form>
