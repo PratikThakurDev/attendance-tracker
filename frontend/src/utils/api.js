@@ -18,3 +18,37 @@ export const login = async (formData) => {
     throw err.response?.data || { error: "Login failed" };
   }
 };
+
+export const fetchSubjects = async (userId) => {
+  const { data } = await axios.get(`${API_BASE}/subjects/${userId}`);
+  return data;
+};
+
+export const addSubject = async (userId, subjectName) => {
+  const { data } = await axios.post(`${API_BASE}/subjects`, {
+    user_id: userId,
+    subject_name: subjectName,
+  });
+  return data;
+};
+
+export const fetchAttendanceBySubject = async (subjectId) => {
+  const { data } = await axios.get(`${API_BASE}/attendance/${subjectId}`);
+  return data;
+};
+
+export const fetchSummary = async (userId) => {
+  const { data } = await axios.get(`${API_BASE}/attendance/summary/${userId}`);
+  return data;
+};
+
+export const markAttendance = async (student_id, subject_id, status, date) => {
+  const { data } = await axios.post(`${API_BASE}/attendance`, {
+    student_id,
+    subject_id,
+    status,
+    date,
+  });
+  return data;
+};
+
