@@ -6,7 +6,7 @@ function Sidebar({ currentPage, setCurrentPage }) {
     { name: "Dashboard", key: "dashboard" },
     { name: "Attendance Calendar", key: "calendar" },
     { name: "Classes Attended Graph", key: "graph" },
-    { name: "Classes Canceled", key: "canceled" },
+    { name: "Add subjects", key: "canceled" },
     { name: "Logs", key: "logs" },
     { name: "Settings", key: "settings" },
   ];

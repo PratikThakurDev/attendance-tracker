@@ -5,31 +5,35 @@ import Card from "../components/Card";
 import ClassesAttendedChart from "../components/AttendanceChart";
 import CalendarWidget from "../components/CalendarWidget";
 import LogTable from "../components/LogTable";
+import AddSubjectModal from "../components/AddSubjectModal";
 import MarkAttendanceModal from "../components/MarkAttendanceModal";
 import { fetchSummary, fetchAttendanceBySubject } from "../utils/api";
-import {jwtDecode} from "jwt-decode"; // ✅ stable import
+import { jwtDecode } from "jwt-decode"; // ✅ stable import
 
 function Dashboard() {
   const [userId, setUserId] = useState(null);
   const [summary, setSummary] = useState([]);
+  const handleAddSubjectClick = () => setAddSubjectModalOpen(true);
+  const [addSubjectModalOpen, setAddSubjectModalOpen] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState("dashboard");
 
   // ✅ Extract userId from token
- useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  try {
-    const decoded = jwtDecode(token);
-    setUserId(decoded.id);
-  } catch (err) {
-    console.error("Invalid token", err);
-  }
-}, []);
+    try {
+      const decoded = jwtDecode(token);
+      setUserId(decoded.id);
+    } catch (err) {
+      console.error("Invalid token", err);
+    }
+  }, []);
 
   // ✅ Fetch summary once userId is set
   useEffect(() => {
@@ -106,15 +110,38 @@ function Dashboard() {
 
   return (
     <div className="flex h-screen bg-[#0e1117] text-white">
-      <Sidebar />
 
+      <Sidebar
+        currentPage={currentPage}
+        setCurrentPage={(page) => {
+          setCurrentPage(page);
+          if (page === "canceled") handleAddSubjectClick(); // "Add subjects" key
+        }}
+      />
+
+      <AddSubjectModal
+        isOpen={addSubjectModalOpen}
+        onClose={() => setAddSubjectModalOpen(false)}
+        onSuccess={async () => {
+          const res = await fetchSummary(userId); // refresh subjects
+          setSummary(res);
+        }}
+      />
       <main className="flex-1 p-8 overflow-y-auto space-y-8">
         <TopBar />
 
         {/* Cards */}
         <div className="grid grid-cols-4 gap-6">
-          <Card title="Avg Attendance" value={`${avgAttendance}%`} subtitle="Across all subjects" />
-          <Card title="Subjects" value={summary.length} subtitle="Total Enrolled" />
+          <Card
+            title="Avg Attendance"
+            value={`${avgAttendance}%`}
+            subtitle="Across all subjects"
+          />
+          <Card
+            title="Subjects"
+            value={summary.length}
+            subtitle="Total Enrolled"
+          />
           <Card
             title="Highest Attendance"
             value={
@@ -168,7 +195,6 @@ function Dashboard() {
           <LogTable logs={attendanceLogs} />
         </div>
       </main>
-
       <MarkAttendanceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
