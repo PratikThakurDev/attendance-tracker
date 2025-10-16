@@ -15,7 +15,7 @@ function Dashboard() {
   const [userId, setUserId] = useState(null);
   const [summary, setSummary] = useState([]);
   const [addSubjectModalOpen, setAddSubjectModalOpen] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
@@ -43,7 +43,18 @@ function Dashboard() {
       try {
         setLoadingSummary(true);
         const res = await fetchSummary(userId);
-        setSummary(res);
+        const normalized = res.map((s) => ({
+          id: s.subject_id?.toString() ?? "",
+          subject_name: s.subject_name ?? "Unnamed Subject",
+          present_count: s.present_count ?? 0,
+          total_classes: s.total_classes ?? 0,
+          attendance_percentage: s.attendance_percentage ?? "0.00",
+        }));
+        setSummary(normalized);
+
+        if (!selectedSubject && res.length > 0) {
+          setSelectedSubject(res[0].id?.toString() ?? "");
+        }
       } catch (err) {
         console.error("Error fetching summary:", err.message);
       } finally {
@@ -54,7 +65,7 @@ function Dashboard() {
   }, [userId]);
 
   useEffect(() => {
-    if (!selectedSubject || isNaN(Number(selectedSubject))) {
+    if (!selectedSubject) {
       setAttendanceLogs([]);
       setChartData([]);
       return;
@@ -67,10 +78,13 @@ function Dashboard() {
 
         const dailyMap = {};
         logs.forEach((log) => {
-          const day = new Date(log.attendance_date).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-          });
+          const day = new Date(log.attendance_date).toLocaleDateString(
+            "en-IN",
+            {
+              day: "numeric",
+              month: "short",
+            }
+          );
           if (!dailyMap[day]) dailyMap[day] = 0;
           if (log.status) dailyMap[day] += 1;
         });
@@ -92,7 +106,7 @@ function Dashboard() {
 
   const handleAddSuccess = async (newSubject) => {
     setSummary((prev) => [...prev, newSubject]);
-    setSelectedSubject(newSubject.id);
+    setSelectedSubject(newSubject.id?.toString() ?? "");
   };
 
   const avgAttendance =
@@ -130,6 +144,7 @@ function Dashboard() {
         <button
           className="text-white text-2xl p-2 rounded-md hover:bg-[#1a1a1a]"
           onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Toggle sidebar"
         >
           <HiOutlineMenu />
         </button>
@@ -137,7 +152,10 @@ function Dashboard() {
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black/60 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-[#111217] z-50 transform transition-transform duration-300 lg:hidden ${
@@ -149,7 +167,7 @@ function Dashboard() {
           setCurrentPage={(page) => {
             setCurrentPage(page);
             if (page === "canceled") handleAddSubjectClick();
-            setSidebarOpen(false); // close sidebar on selection
+            setSidebarOpen(false); 
           }}
         />
       </div>
@@ -166,17 +184,21 @@ function Dashboard() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <Card title="Avg Attendance" value={`${avgAttendance}%`} subtitle="Across all subjects" />
-          <Card title="Subjects" value={summary.length} subtitle="Total Enrolled" />
+          <Card
+            title="Avg Attendance"
+            value={`${avgAttendance}%`}
+            subtitle="Across all subjects"
+          />
+          <Card
+            title="Subjects"
+            value={summary.length}
+            subtitle="Total Enrolled"
+          />
           <Card
             title="Highest Attendance"
             value={
               summary.length > 0
-                ? `${Math.max(
-                    ...summary.map((s) =>
-                      parseFloat(s.attendance_percentage || 0)
-                    )
-                  )}%`
+                ? `${Math.max(...summary.map((s) => parseFloat(s.attendance_percentage || 0)))}%`
                 : "0%"
             }
             subtitle="Top Subject"
@@ -186,10 +208,8 @@ function Dashboard() {
             value={attendanceLogs.length}
             subtitle={
               selectedSubject
-                ? `For ${
-                    summary.find((s) => s.id === Number(selectedSubject))
-                      ?.subject_name
-                  }`
+                ? (summary.find((s) => s.id?.toString() === selectedSubject)
+                    ?.subject_name ?? "Unknown Subject")
                 : "Select a Subject"
             }
           />
@@ -203,13 +223,16 @@ function Dashboard() {
           <div className="flex gap-3 sm:gap-4 w-full sm:w-auto">
             <select
               className="flex-1 sm:flex-none bg-[#18181b] border border-[#1fd6c1]/30 px-3 py-2 rounded-lg text-sm sm:text-base"
-              value={selectedSubject ?? ""}
-              onChange={(e) => setSelectedSubject(e.target.value || null)}
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
             >
               <option value="">-- Choose --</option>
               {summary.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.subject_name}
+                <option
+                  key={s.id?.toString() ?? s.subject_name}
+                  value={s.id?.toString() ?? ""}
+                >
+                  {s.subject_name ?? "Unnamed Subject"}
                 </option>
               ))}
             </select>
@@ -245,7 +268,10 @@ function Dashboard() {
           logs.forEach((log) => {
             const day = new Date(log.attendance_date).toLocaleDateString(
               "en-IN",
-              { day: "numeric", month: "short" }
+              {
+                day: "numeric",
+                month: "short",
+              }
             );
             if (!dailyMap[day]) dailyMap[day] = 0;
             if (log.status) dailyMap[day] += 1;
