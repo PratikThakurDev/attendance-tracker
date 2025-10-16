@@ -12,7 +12,7 @@ function Sidebar({ currentPage, setCurrentPage }) {
   ];
 
   return (
-    <aside className="w-64 bg-[#151d23] p-5 flex flex-col justify-between border-r border-gray-800">
+    <aside className="w-64 bg-[#151d23] p-5 flex flex-col justify-between border-r border-gray-800 min-h-screen">
       <div>
         <h1 className="text-2xl font-bold text-[#1fd6c1] mb-8">AttendEase</h1>
         <ul className="space-y-4 text-gray-300">
