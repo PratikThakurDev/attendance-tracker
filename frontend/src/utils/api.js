@@ -43,6 +43,23 @@ export const addSubject = async (userId, subjectName) => {
   return data;
 };
 
+export const updateSubject = async (subjectId, subjectData) => {
+  const { data } = await axios.put(
+    `${API_BASE}/subjects/${subjectId}`,
+    subjectData,
+    getHeaders()
+  );
+  return data;
+};
+
+export const deleteSubject = async (subjectId) => {
+  const { data } = await axios.delete(
+    `${API_BASE}/subjects/${subjectId}`,
+    getHeaders()
+  );
+  return data;
+};
+
 export const fetchAttendanceBySubject = async (subjectId) => {
   const { data } = await axios.get(`${API_BASE}/attendance/${subjectId}`, getHeaders());
   return data;
@@ -57,6 +74,44 @@ export const markAttendance = async (student_id, subject_id, status, date) => {
   const { data } = await axios.post(
     `${API_BASE}/attendance`,
     { student_id, subject_id, status, date },
+    getHeaders()
+  );
+  return data;
+};
+
+export const fetchDashboardSummary = async (userId) => {
+  const { data } = await axios.get(
+    `${API_BASE}/attendance/dashboard-summary/${userId}`,
+    getHeaders()
+  );
+  return data;
+};
+
+export const fetchDailyAttendance = async (userId) => {
+  const { data } = await axios.get(
+    `${API_BASE}/attendance/daily/${userId}`,
+    getHeaders()
+  );
+  return data;
+};
+
+export const fetchTimetable = async (userId) => {
+  const { data } = await axios.get(`${API_BASE}/timetable/${userId}`, getHeaders());
+  return data;
+};
+
+export const saveTimetable = async (userId, timetable) => {
+  const { data } = await axios.post(
+    `${API_BASE}/timetable/${userId}`,
+    { timetable },
+    getHeaders()
+  );
+  return data;
+};
+
+export const clearTimetable = async (userId) => {
+  const { data } = await axios.delete(
+    `${API_BASE}/timetable/${userId}`,
     getHeaders()
   );
   return data;

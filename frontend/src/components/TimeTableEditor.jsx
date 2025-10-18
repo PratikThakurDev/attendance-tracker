@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { fetchTimetable, saveTimetable, clearTimetable } from "../utils/api";
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const timeSlots = ["8-9", "9-10", "10-11", "11-12", "12-1", "1-2", "2-3", "3-4", "4-5", "5-6"];
@@ -7,22 +8,45 @@ function TimetableEditor({ userId, subjects }) {
   const [timetable, setTimetable] = useState({});
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
-  // Initialize empty timetable
   useEffect(() => {
-    const initialTimetable = {};
-    daysOfWeek.forEach((day) => {
-      initialTimetable[day] = {};
-      timeSlots.forEach((time) => {
-        initialTimetable[day][time] = "";
+    const loadTimetable = async () => {
+      if (!userId) return;
+      
+      setInitializing(true);
+      
+      // Initialize empty timetable structure
+      const initialTimetable = {};
+      daysOfWeek.forEach((day) => {
+        initialTimetable[day] = {};
+        timeSlots.forEach((time) => {
+          initialTimetable[day][time] = "";
+        });
       });
-    });
+      
+      try {
+        const savedTimetable = await fetchTimetable(userId);
+        
+        // Merge saved data with initial structure
+        Object.keys(initialTimetable).forEach(day => {
+          Object.keys(initialTimetable[day]).forEach(time => {
+            if (savedTimetable[day]?.[time]) {
+              initialTimetable[day][time] = savedTimetable[day][time];
+            }
+          });
+        });
+        
+        setTimetable(initialTimetable);
+      } catch (err) {
+        console.error("Failed to load timetable:", err);
+        setTimetable(initialTimetable);
+      } finally {
+        setInitializing(false);
+      }
+    };
     
-    // TODO: Load timetable from backend API
-    // const savedTimetable = await fetchTimetable(userId);
-    // setTimetable(savedTimetable || initialTimetable);
-    
-    setTimetable(initialTimetable);
+    loadTimetable();
   }, [userId]);
 
   const handleCellChange = (day, time, value) => {
@@ -38,28 +62,47 @@ function TimetableEditor({ userId, subjects }) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // TODO: Save timetable to backend
-      // await saveTimetable(userId, timetable);
+      await saveTimetable(userId, timetable);
       alert("Timetable saved successfully!");
       setEditMode(false);
     } catch (err) {
-      alert("Failed to save timetable: " + err.message);
+      alert("Failed to save timetable: " + (err.message || "Unknown error"));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (!window.confirm("Clear entire timetable?")) return;
-    const emptyTimetable = {};
-    daysOfWeek.forEach((day) => {
-      emptyTimetable[day] = {};
-      timeSlots.forEach((time) => {
-        emptyTimetable[day][time] = "";
+    
+    setLoading(true);
+    try {
+      await clearTimetable(userId);
+      
+      // Reset local state
+      const emptyTimetable = {};
+      daysOfWeek.forEach((day) => {
+        emptyTimetable[day] = {};
+        timeSlots.forEach((time) => {
+          emptyTimetable[day][time] = "";
+        });
       });
-    });
-    setTimetable(emptyTimetable);
+      setTimetable(emptyTimetable);
+      alert("Timetable cleared successfully!");
+    } catch (err) {
+      alert("Failed to clear timetable: " + (err.message || "Unknown error"));
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (initializing) {
+    return (
+      <div className="flex items-center justify-center h-64 text-white">
+        Loading timetable...
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 text-white">
@@ -77,20 +120,22 @@ function TimetableEditor({ userId, subjects }) {
             <>
               <button
                 onClick={handleClear}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
               >
                 Clear All
               </button>
               <button
                 onClick={() => setEditMode(false)}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+                disabled={loading}
+                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={loading}
-                className="px-4 py-2 bg-[#1fd6c1] text-black rounded hover:bg-[#17b9a9] font-semibold"
+                className="px-4 py-2 bg-[#1fd6c1] text-black rounded hover:bg-[#17b9a9] font-semibold disabled:opacity-50"
               >
                 {loading ? "Saving..." : "Save"}
               </button>

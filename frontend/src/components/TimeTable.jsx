@@ -1,81 +1,88 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { fetchTimetable } from "../utils/api";
 
 // Define timeslots
 const times = [
   "8-9", "9-10", "10-11", "11-12", "12-1", "1-2", "2-3", "3-4", "4-5", "5-6"
 ];
 
-// This format: one entry for each day with time/subject pairs
-const timetable = {
-  Monday: {
-    "8-9": "SEC-I EP103 (LAB)",
-    "9-10": "SEC-I EP103 (LAB)",
-    "10-11": "",
-    "11-12": "",
-    "12-1": "EE105 (L)",
-    "1-2": "",
-    "2-3": "AM101 (L) SPS7",
-    "3-4": "AM101 G1(T) SPS7",
-    "4-5": "",
-    "5-6": "AP101 (LAB)"
-  },
-  Tuesday: {
-    "8-9": "",
-    "9-10": "AEC/VAC",
-    "10-11": "",
-    "11-12": "AM101 (L)",
-    "12-1": "",
-    "1-2": "AC101 (L)",
-    "2-3": "",
-    "3-4": "",
-    "4-5": "",
-    "5-6": ""
-  },
-  Wednesday: {
-    "8-9": "",
-    "9-10": "AP101 (L)",
-    "10-11": "EE105 (L)",
-    "11-12": "",
-    "12-1": "SEC-I (EP103) SPS08",
-    "1-2": "",
-    "2-3": "",
-    "3-4": "",
-    "4-5": "Zero Hour (No Classes)",
-    "5-6": ""
-  },
-  Thursday: {
-    "8-9": "",
-    "9-10": "AEC/VAC",
-    "10-11": "",
-    "11-12": "",
-    "12-1": "",
-    "1-2": "",
-    "2-3": "AC101 (LAB)",
-    "3-4": "",
-    "4-5": "",
-    "5-6": ""
-  },
-  Friday: {
-    "8-9": "EE105 (LAB)",
-    "9-10": "",
-    "10-11": "",
-    "11-12": "AM101 G2(T) SPS7",
-    "12-1": "AP101 (L)",
-    "1-2": "AC101 (L)",
-    "2-3": "",
-    "3-4": "",
-    "4-5": "",
-    "5-6": ""
-  }
-};
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-function Timetable() {
-  const days = Object.keys(timetable);
+function Timetable({ userId }) {
+  const [timetable, setTimetable] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [isEmpty, setIsEmpty] = useState(false);
+
+  useEffect(() => {
+    const loadTimetable = async () => {
+      if (!userId) return;
+      
+      setLoading(true);
+      
+      // Initialize empty structure
+      const emptyTimetable = {};
+      days.forEach((day) => {
+        emptyTimetable[day] = {};
+        times.forEach((time) => {
+          emptyTimetable[day][time] = "";
+        });
+      });
+
+      try {
+        const savedTimetable = await fetchTimetable(userId);
+        
+        // Check if timetable has any data
+        let hasData = false;
+        Object.keys(savedTimetable).forEach(day => {
+          Object.keys(savedTimetable[day] || {}).forEach(time => {
+            if (savedTimetable[day][time] && savedTimetable[day][time].trim() !== "") {
+              hasData = true;
+              emptyTimetable[day][time] = savedTimetable[day][time];
+            }
+          });
+        });
+        
+        setIsEmpty(!hasData);
+        setTimetable(emptyTimetable);
+      } catch (err) {
+        console.error("Failed to load timetable:", err);
+        setTimetable(emptyTimetable);
+        setIsEmpty(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTimetable();
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <div className="bg-[#18181b] p-5 rounded-xl border border-[#1fd6c1]/30">
+        <h3 className="text-lg font-semibold mb-4">Weekly Timetable</h3>
+        <p className="text-gray-400">Loading timetable...</p>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="bg-[#18181b] p-5 rounded-xl border border-[#1fd6c1]/30 flex flex-col items-center justify-center min-h-[200px]">
+        <h3 className="text-lg font-semibold mb-2">Weekly Timetable</h3>
+        <p className="text-gray-400 text-center mb-4">
+          No timetable created yet.
+        </p>
+        <p className="text-sm text-gray-500">
+          Go to "Edit Timetable" from the sidebar to create your schedule.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#18181b] p-5 rounded-xl border border-[#1fd6c1]/30 overflow-auto">
-      <h3 className="text-lg font-semibold mb-4">DTU Weekly Timetable</h3>
-      <table className="w-full border-collapse text-sm">
+      <h3 className="text-lg font-semibold mb-4">Weekly Timetable</h3>
+      <table className="w-full border-collapse text-xs">
         <thead>
           <tr>
             <th className="border border-[#1fd6c1]/30 px-2 py-1 bg-[#232d3f]">Day</th>
@@ -89,10 +96,12 @@ function Timetable() {
         <tbody>
           {days.map((day) => (
             <tr key={day}>
-              <td className="border border-[#1fd6c1]/30 px-2 py-1 font-medium bg-[#232d3f]">{day}</td>
+              <td className="border border-[#1fd6c1]/30 px-2 py-1 font-medium bg-[#232d3f]">
+                {day}
+              </td>
               {times.map((time) => (
                 <td key={time} className="border border-[#1fd6c1]/30 px-2 py-1 text-[#1fd6c1]">
-                  {timetable[day][time] || "-"}
+                  {timetable[day]?.[time] || "-"}
                 </td>
               ))}
             </tr>

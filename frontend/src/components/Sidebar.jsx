@@ -5,10 +5,7 @@ function Sidebar({ currentPage, setCurrentPage }) {
   const menu = [
     { name: "Dashboard", key: "dashboard" },
     { name: "Edit TimeTable", key: "timeTable" },
-    { name: "Classes Attended Graph", key: "graph" },
-    { name: "Add Subject", key: "addSubject" },
     { name: "Edit Subject", key: "editSubject" },
-    { name: "Settings", key: "settings" },
   ];
 
   return (

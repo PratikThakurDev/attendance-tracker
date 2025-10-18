@@ -7,9 +7,9 @@ function SubjectFormModal({
   onSuccess, 
   onDelete, 
   subject,
-  addSubject,  // API function to add subject
-  updateSubject, // API function to update subject
-  deleteSubject  // API function to delete subject
+  addSubject,  
+  updateSubject, 
+  deleteSubject 
 }) {
   const [subjectName, setSubjectName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,21 +52,6 @@ function SubjectFormModal({
     }
   };
 
-  const handleDelete = async () => {
-    if (!isEditMode) return;
-    if (!window.confirm(`Are you sure you want to delete "${subjectName}"?`)) return;
-    setLoading(true);
-    try {
-      await deleteSubject(subject.id);
-      onDelete(subject.id);
-      onClose();
-    } catch (err) {
-      setError(err.response?.data?.error || "Delete failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-[#18181b] p-6 rounded-lg w-96 border border-[#1fd6c1]/30">
@@ -84,16 +69,6 @@ function SubjectFormModal({
           {error && <p className="text-red-500 mb-2">{error}</p>}
 
           <div className="flex justify-between items-center">
-            {isEditMode && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="text-red-500 bg-red-700 hover:bg-red-800 px-3 py-1 rounded"
-                disabled={loading}
-              >
-                Delete
-              </button>
-            )}
             <div className="ml-auto space-x-3">
               <button
                 type="button"

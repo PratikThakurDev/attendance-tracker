@@ -12,8 +12,8 @@ import {
   fetchSummary,
   fetchAttendanceBySubject,
   addSubject,
-  // updateSubject,
-  // deleteSubject,
+  updateSubject,
+  deleteSubject,
 } from "../utils/api";
 import jwtDecode from "jwt-decode";
 import { HiOutlineMenu } from "react-icons/hi";
@@ -114,13 +114,25 @@ function Dashboard() {
   const handleSubjectFormSuccess = (subject) => {
     setSummary((prev) => {
       if (editingSubject) {
-        // Update existing subject
-        return prev.map((s) => (s.id === subject.id ? subject : s));
+        // Update existing subject - preserve attendance data
+        return prev.map((s) =>
+          s.id === subject.id?.toString()
+            ? { ...s, subject_name: subject.subject_name }
+            : s
+        );
       } else {
-        // Add new subject
-        return [...prev, subject];
+        // Add new subject - normalize the response
+        const normalized = {
+          id: subject.id?.toString() ?? "",
+          subject_name: subject.subject_name ?? "Unnamed Subject",
+          present_count: 0,
+          total_classes: 0,
+          attendance_percentage: "0.00",
+        };
+        return [...prev, normalized];
       }
     });
+
     if (!editingSubject) {
       setSelectedSubject(subject.id?.toString() ?? "");
     }
@@ -137,7 +149,6 @@ function Dashboard() {
   };
 
   const openEditSubject = () => {
-    // Open modal showing list of subjects to edit
     setEditingSubject(null);
     setSubjectFormModalOpen(true);
   };
@@ -216,8 +227,8 @@ function Dashboard() {
         onSuccess={handleSubjectFormSuccess}
         onDelete={handleDeleteSubject}
         addSubject={addSubject}
-        // updateSubject={updateSubject}
-        // deleteSubject={deleteSubject}
+        updateSubject={updateSubject}
+        deleteSubject={deleteSubject}
       />
 
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6 sm:space-y-8">
@@ -302,7 +313,7 @@ function Dashboard() {
                 allSubjects={summary}
               />
               <AllSubjectsAttendanceStatus summary={summary} />
-              <TimeTable />
+              <TimeTable userId={userId} />
             </div>
           </>
         )}
@@ -332,13 +343,21 @@ function Dashboard() {
                         Edit
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (
                             window.confirm(
                               `Delete subject "${subject.subject_name}"?`
                             )
                           ) {
-                            handleDeleteSubject(subject.id);
+                            try {
+                              await deleteSubject(subject.id);
+                              handleDeleteSubject(subject.id);
+                            } catch (err) {
+                              alert(
+                                "Failed to delete subject: " +
+                                  (err.message || "Unknown error")
+                              );
+                            }
                           }
                         }}
                         className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
