@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/Topbar";
 import Card from "../components/Card";
-import ClassesAttendedChart from "../components/AttendanceChart";
+import SubjectAttendanceCard from "../components/SubjectAttendanceCard";
 import CalendarWidget from "../components/CalendarWidget";
 import LogTable from "../components/LogTable";
 import AddSubjectModal from "../components/AddSubjectModal";
@@ -37,32 +37,34 @@ function Dashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!userId) return;
-    const loadSummary = async () => {
-      try {
-        setLoadingSummary(true);
-        const res = await fetchSummary(userId);
-        const normalized = res.map((s) => ({
-          id: s.subject_id?.toString() ?? "",
-          subject_name: s.subject_name ?? "Unnamed Subject",
-          present_count: s.present_count ?? 0,
-          total_classes: s.total_classes ?? 0,
-          attendance_percentage: s.attendance_percentage ?? "0.00",
-        }));
-        setSummary(normalized);
+const loadSummary = async () => {
+  if (!userId) return;
+  try {
+    setLoadingSummary(true);
+    const res = await fetchSummary(userId);
+    const normalized = res.map((s) => ({
+      id: s.subject_id?.toString() ?? "",
+      subject_name: s.subject_name ?? "Unnamed Subject",
+      present_count: s.present_count ?? 0,
+      total_classes: s.total_classes ?? 0,
+      attendance_percentage: s.attendance_percentage ?? "0.00",
+    }));
+    setSummary(normalized);
 
-        if (!selectedSubject && res.length > 0) {
-          setSelectedSubject(res[0].id?.toString() ?? "");
-        }
-      } catch (err) {
-        console.error("Error fetching summary:", err.message);
-      } finally {
-        setLoadingSummary(false);
-      }
-    };
-    loadSummary();
-  }, [userId]);
+    if (!selectedSubject && res.length > 0) {
+      setSelectedSubject(res[0].id?.toString() ?? "");
+    }
+  } catch (err) {
+    console.error("Error fetching summary:", err.message);
+  } finally {
+    setLoadingSummary(false);
+  }
+};
+
+useEffect(() => {
+  loadSummary();
+}, [userId]);
+
 
   useEffect(() => {
     if (!selectedSubject) {
@@ -167,7 +169,7 @@ function Dashboard() {
           setCurrentPage={(page) => {
             setCurrentPage(page);
             if (page === "canceled") handleAddSubjectClick();
-            setSidebarOpen(false); 
+            setSidebarOpen(false);
           }}
         />
       </div>
@@ -248,9 +250,13 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Charts + Logs */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          <ClassesAttendedChart data={chartData} />
+          <SubjectAttendanceCard
+            selectedSubject={summary.find(
+              (s) => s.id?.toString() === selectedSubject
+            )}
+          />
+
           <CalendarWidget attendanceLogs={attendanceLogs} />
           <LogTable logs={attendanceLogs} />
         </div>
@@ -282,6 +288,7 @@ function Dashboard() {
               classesAttended: dailyMap[day],
             }))
           );
+          await loadSummary();
         }}
       />
     </div>

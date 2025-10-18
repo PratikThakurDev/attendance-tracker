@@ -18,8 +18,8 @@ CREATE TABLE subjects (
 CREATE TABLE attendance (
     id SERIAL PRIMARY KEY,
     subject_id INT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
-    attendance_date DATE NOT NULL,
+    date DATE NOT NULL,
     status BOOLEAN NOT NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (subject_id, attendance_date) 
+    UNIQUE (subject_id, date) 
 );
