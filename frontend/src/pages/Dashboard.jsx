@@ -3,24 +3,26 @@ import Sidebar from "../components/Sidebar";
 import TopBar from "../components/Topbar";
 import Card from "../components/Card";
 import SubjectAttendanceCard from "../components/SubjectAttendanceCard";
-import TimeTable from "../components/CalendarWidget";
+import TimeTable from "../components/TimeTable";
+import TimetableEditor from "../components/TimeTableEditor";
 import AllSubjectsAttendanceStatus from "../components/AllSubjectsAttendance";
-import AddSubjectModal from "../components/AddSubjectModal";
+import SubjectFormModal from "../components/SubjectFormModal";
 import MarkAttendanceModal from "../components/MarkAttendanceModal";
-import { fetchSummary, fetchAttendanceBySubject } from "../utils/api";
+import {
+  fetchSummary,
+  fetchAttendanceBySubject,
+  addSubject,
+  // updateSubject,
+  // deleteSubject,
+} from "../utils/api";
 import jwtDecode from "jwt-decode";
 import { HiOutlineMenu } from "react-icons/hi";
-
-const userTimetable = [
-  { day: "Monday", time: "9:00 - 10:00 AM", subject: "Mathematics" },
-  { day: "Monday", time: "10:00 - 11:00 AM", subject: "Physics" },
-  
-];
 
 function Dashboard() {
   const [userId, setUserId] = useState(null);
   const [summary, setSummary] = useState([]);
-  const [addSubjectModalOpen, setAddSubjectModalOpen] = useState(false);
+  const [subjectFormModalOpen, setSubjectFormModalOpen] = useState(false);
+  const [editingSubject, setEditingSubject] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [chartData, setChartData] = useState([]);
@@ -28,9 +30,7 @@ function Dashboard() {
   const [loadingAttendance, setLoadingAttendance] = useState(false);
   const [markAttendanceModalOpen, setMarkAttendanceModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(false); // for mobile
-
-  const handleAddSubjectClick = () => setAddSubjectModalOpen(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -57,8 +57,8 @@ function Dashboard() {
       }));
       setSummary(normalized);
 
-      if (!selectedSubject && res.length > 0) {
-        setSelectedSubject(res[0].id?.toString() ?? "");
+      if (!selectedSubject && normalized.length > 0) {
+        setSelectedSubject(normalized[0].id ?? "");
       }
     } catch (err) {
       console.error("Error fetching summary:", err.message);
@@ -111,9 +111,35 @@ function Dashboard() {
     loadAttendance();
   }, [selectedSubject]);
 
-  const handleAddSuccess = async (newSubject) => {
-    setSummary((prev) => [...prev, newSubject]);
-    setSelectedSubject(newSubject.id?.toString() ?? "");
+  const handleSubjectFormSuccess = (subject) => {
+    setSummary((prev) => {
+      if (editingSubject) {
+        // Update existing subject
+        return prev.map((s) => (s.id === subject.id ? subject : s));
+      } else {
+        // Add new subject
+        return [...prev, subject];
+      }
+    });
+    if (!editingSubject) {
+      setSelectedSubject(subject.id?.toString() ?? "");
+    }
+  };
+
+  const handleDeleteSubject = (id) => {
+    setSummary((prev) => prev.filter((s) => s.id !== id));
+    if (selectedSubject === id) setSelectedSubject("");
+  };
+
+  const openAddSubject = () => {
+    setEditingSubject(null);
+    setSubjectFormModalOpen(true);
+  };
+
+  const openEditSubject = () => {
+    // Open modal showing list of subjects to edit
+    setEditingSubject(null);
+    setSubjectFormModalOpen(true);
   };
 
   const avgAttendance =
@@ -141,7 +167,8 @@ function Dashboard() {
           currentPage={currentPage}
           setCurrentPage={(page) => {
             setCurrentPage(page);
-            if (page === "canceled") handleAddSubjectClick();
+            if (page === "addSubject") openAddSubject();
+            if (page === "editSubject") openEditSubject();
           }}
         />
       </div>
@@ -173,100 +200,158 @@ function Dashboard() {
           currentPage={currentPage}
           setCurrentPage={(page) => {
             setCurrentPage(page);
-            if (page === "canceled") handleAddSubjectClick();
+            if (page === "addSubject") openAddSubject();
+            if (page === "editSubject") openEditSubject();
             setSidebarOpen(false);
           }}
         />
       </div>
 
-      <AddSubjectModal
-        isOpen={addSubjectModalOpen}
-        onClose={() => setAddSubjectModalOpen(false)}
+      {/* Unified Subject Form Modal */}
+      <SubjectFormModal
+        isOpen={subjectFormModalOpen}
+        onClose={() => setSubjectFormModalOpen(false)}
         userId={userId}
-        onSuccess={handleAddSuccess}
+        subject={editingSubject}
+        onSuccess={handleSubjectFormSuccess}
+        onDelete={handleDeleteSubject}
+        addSubject={addSubject}
+        // updateSubject={updateSubject}
+        // deleteSubject={deleteSubject}
       />
 
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6 sm:space-y-8">
         <TopBar />
+        {currentPage === "timeTable" && (
+          <TimetableEditor userId={userId} subjects={summary} />
+        )}
+        {/* Cards only visible if dashboard is selected */}
+        {currentPage === "dashboard" && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              <Card
+                title="Avg Attendance"
+                value={`${avgAttendance}%`}
+                subtitle="Across all subjects"
+              />
+              <Card
+                title="Subjects"
+                value={summary.length}
+                subtitle="Total Enrolled"
+              />
+              <Card
+                title="Highest Attendance"
+                value={
+                  summary.length > 0
+                    ? `${Math.max(...summary.map((s) => parseFloat(s.attendance_percentage || 0)))}%`
+                    : "0%"
+                }
+                subtitle="Top Subject"
+              />
+              <Card
+                title="Classes Recorded"
+                value={attendanceLogs.length}
+                subtitle={
+                  selectedSubject
+                    ? (summary.find((s) => s.id?.toString() === selectedSubject)
+                        ?.subject_name ?? "Unknown Subject")
+                    : "Select a Subject"
+                }
+              />
+            </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <Card
-            title="Avg Attendance"
-            value={`${avgAttendance}%`}
-            subtitle="Across all subjects"
-          />
-          <Card
-            title="Subjects"
-            value={summary.length}
-            subtitle="Total Enrolled"
-          />
-          <Card
-            title="Highest Attendance"
-            value={
-              summary.length > 0
-                ? `${Math.max(...summary.map((s) => parseFloat(s.attendance_percentage || 0)))}%`
-                : "0%"
-            }
-            subtitle="Top Subject"
-          />
-          <Card
-            title="Classes Recorded"
-            value={attendanceLogs.length}
-            subtitle={
-              selectedSubject
-                ? (summary.find((s) => s.id?.toString() === selectedSubject)
-                    ?.subject_name ?? "Unknown Subject")
-                : "Select a Subject"
-            }
-          />
-        </div>
-
-        {/* Subject Selector */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <label className="font-semibold text-sm sm:text-base">
-            Select Subject:
-          </label>
-          <div className="flex gap-3 sm:gap-4 w-full sm:w-auto">
-            <select
-              className="flex-1 sm:flex-none bg-[#18181b] border border-[#1fd6c1]/30 px-3 py-2 rounded-lg text-sm sm:text-base"
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-            >
-              <option value="">-- Choose --</option>
-              {summary.map((s) => (
-                <option
-                  key={s.id?.toString() ?? s.subject_name}
-                  value={s.id?.toString() ?? ""}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <label className="font-semibold text-sm sm:text-base">
+                Select Subject:
+              </label>
+              <div className="flex gap-3 sm:gap-4 w-full sm:w-auto">
+                <select
+                  className="flex-1 sm:flex-none bg-[#18181b] border border-[#1fd6c1]/30 px-3 py-2 rounded-lg text-sm sm:text-base"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
                 >
-                  {s.subject_name ?? "Unnamed Subject"}
-                </option>
-              ))}
-            </select>
-            <button
-              className="px-3 sm:px-4 py-2 rounded-lg bg-[#1fd6c1] text-black font-semibold text-sm sm:text-base"
-              onClick={() => {
-                if (!selectedSubject) return alert("Select a subject first");
-                setMarkAttendanceModalOpen(true);
-              }}
-            >
-              Mark Attendance
-            </button>
-          </div>
-        </div>
+                  <option value="">-- Choose --</option>
+                  {summary.map((s) => (
+                    <option
+                      key={s.id?.toString() ?? s.subject_name}
+                      value={s.id?.toString() ?? ""}
+                    >
+                      {s.subject_name ?? "Unnamed Subject"}
+                    </option>
+                  ))}
+                </select>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          <SubjectAttendanceCard
-            selectedSubject={summary.find(
-              (s) => s.id?.toString() === selectedSubject
+                <button
+                  className="px-3 sm:px-4 py-2 rounded-lg bg-[#1fd6c1] text-black font-semibold text-sm sm:text-base"
+                  onClick={() => {
+                    if (!selectedSubject)
+                      return alert("Select a subject first");
+                    setMarkAttendanceModalOpen(true);
+                  }}
+                >
+                  Mark Attendance
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              <SubjectAttendanceCard
+                selectedSubject={summary.find(
+                  (s) => s.id?.toString() === selectedSubject
+                )}
+                allSubjects={summary}
+              />
+              <AllSubjectsAttendanceStatus summary={summary} />
+              <TimeTable />
+            </div>
+          </>
+        )}
+
+        {/* Edit Subject Page - showing list of subjects */}
+        {currentPage === "editSubject" && (
+          <div className="p-6 text-white">
+            <h2 className="text-2xl font-semibold mb-6">Manage Subjects</h2>
+            {summary.length === 0 ? (
+              <p className="text-gray-400">No subjects available.</p>
+            ) : (
+              <ul className="divide-y divide-gray-700 max-w-2xl">
+                {summary.map((subject) => (
+                  <li
+                    key={subject.id}
+                    className="py-3 flex justify-between items-center"
+                  >
+                    <span>{subject.subject_name || "Unnamed Subject"}</span>
+                    <div className="space-x-2">
+                      <button
+                        onClick={() => {
+                          setEditingSubject(subject);
+                          setSubjectFormModalOpen(true);
+                        }}
+                        className="bg-[#1fd6c1] hover:bg-[#17b9a9] text-black px-3 py-1 rounded"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Delete subject "${subject.subject_name}"?`
+                            )
+                          ) {
+                            handleDeleteSubject(subject.id);
+                          }
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
-            allSubjects={summary}
-          />
-
-          
-          <AllSubjectsAttendanceStatus summary={summary} />
-          <TimeTable />
-        </div>
+          </div>
+        )}
       </main>
 
       <MarkAttendanceModal

@@ -4,10 +4,10 @@ import { LogOut } from "lucide-react";
 function Sidebar({ currentPage, setCurrentPage }) {
   const menu = [
     { name: "Dashboard", key: "dashboard" },
-    { name: "Attendance Calendar", key: "calendar" },
+    { name: "Edit TimeTable", key: "timeTable" },
     { name: "Classes Attended Graph", key: "graph" },
-    { name: "Add subjects", key: "canceled" },
-    { name: "Logs", key: "logs" },
+    { name: "Add Subject", key: "addSubject" },
+    { name: "Edit Subject", key: "editSubject" },
     { name: "Settings", key: "settings" },
   ];
 
