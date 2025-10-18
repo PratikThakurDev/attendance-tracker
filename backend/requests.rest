@@ -1,51 +1,132 @@
-### REGISTER USER
-POST http://localhost:5000/api/auth/register
+
+### Get Timetable for User
+GET http://localhost:5000/api/timetable/1
+Content-Type: application/json
+
+###
+
+### Save/Update Timetable
+POST http://localhost:5000/api/timetable/1
 Content-Type: application/json
 
 {
-  "name": "Rahul Sharma",
-  "email": "rahul@example.com",
-  "password": "123456"
+  "timetable": {
+    "Monday": {
+      "8-9": "SEC-I EP103 (LAB)",
+      "9-10": "SEC-I EP103 (LAB)",
+      "12-1": "EE105 (L)",
+      "2-3": "AM101 (L) SPS7",
+      "3-4": "AM101 G1(T) SPS7",
+      "5-6": "AP101 (LAB)"
+    },
+    "Tuesday": {
+      "9-10": "AEC/VAC",
+      "11-12": "AM101 (L)",
+      "1-2": "AC101 (L)"
+    },
+    "Wednesday": {
+      "9-10": "AP101 (L)",
+      "10-11": "EE105 (L)",
+      "12-1": "SEC-I (EP103) SPS08",
+      "4-5": "Zero Hour"
+    },
+    "Thursday": {
+      "9-10": "AEC/VAC",
+      "2-3": "AC101 (LAB)"
+    },
+    "Friday": {
+      "8-9": "EE105 (LAB)",
+      "11-12": "AM101 G2(T) SPS7",
+      "12-1": "AP101 (L)",
+      "1-2": "AC101 (L)"
+    }
+  }
 }
 
 ###
 
-### LOGIN USER
-POST http://localhost:5000/api/auth/login
-Content-Type: application/json
+### Clear Timetable
+DELETE http://localhost:5000/api/timetable/1
 
-{
-  "email": "rahul@example.com",
-  "password": "123456"
-}
-
-
-
-### GET SUBJECTS FOR A USER
+### Get All Subjects for User
 GET http://localhost:5000/api/subjects/1
-Content-Type: application/json
 
 ###
 
-### ADD A NEW SUBJECT
+### Add New Subject
 POST http://localhost:5000/api/subjects
 Content-Type: application/json
 
 {
   "user_id": 1,
-  "subject_name": "Physics"
+  "subject_name": "Mathematics"
 }
 
-### Add past attendance
+###
+
+### Update Subject Name
+PUT http://localhost:5000/api/subjects/3
+Content-Type: application/json
+
+{
+  "subject_name": "Advanced Mathematics"
+}
+
+###
+
+### Delete Subject
+DELETE http://localhost:5000/api/subjects/3
+
+### Mark Attendance
 POST http://localhost:5000/api/attendance
 Content-Type: application/json
 
 {
   "student_id": 1,
-  "subject_id": 1,
-  "status": "true",
-  "date": "2025-09-10"
+  "subject_id": 2,
+  "status": true,
+  "date": "2025-10-18"
 }
 
-### Get attendance summary for a student
+###
+
+### Get Attendance for Specific Subject
+GET http://localhost:5000/api/attendance/2
+
+###
+
+### Get Attendance Summary for User
 GET http://localhost:5000/api/attendance/summary/1
+
+###
+
+### Get Dashboard Summary
+GET http://localhost:5000/api/attendance/dashboard-summary/1
+
+###
+
+### Get Daily Attendance Data
+GET http://localhost:5000/api/attendance/daily/1
+
+### User Signup
+POST http://localhost:5000/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+###
+
+### User Login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+###

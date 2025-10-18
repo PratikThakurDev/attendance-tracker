@@ -1,7 +1,9 @@
 import express from "express";
 import pool from "../db/db.js";
+
 const router = express.Router();
 
+// GET all subjects for a user
 router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -15,6 +17,7 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+// POST - Add new subject
 router.post("/", async (req, res) => {
   try {
     const { user_id, subject_name } = req.body;
@@ -23,6 +26,47 @@ router.post("/", async (req, res) => {
       [user_id, subject_name]
     );
     res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT - Update subject
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subject_name } = req.body;
+    
+    const result = await pool.query(
+      "UPDATE subjects SET subject_name = $1 WHERE id = $2 RETURNING *",
+      [subject_name, id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE - Delete subject
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query(
+      "DELETE FROM subjects WHERE id = $1 RETURNING *",
+      [id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
+    
+    res.json({ message: "Subject deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

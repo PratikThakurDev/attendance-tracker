@@ -85,11 +85,11 @@ router.get("/dashboard-summary/:userId", async (req, res) => {
     const summary = result.rows[0];
   
     const streakResult = await pool.query(`
-      SELECT date_trunc('day', attendance_date) AS day
+      SELECT date_trunc('day', date) AS day
       FROM attendance a
       JOIN subjects s ON s.id = a.subject_id
       WHERE s.user_id = $1 AND status = true
-      ORDER BY attendance_date DESC
+      ORDER BY date DESC
     `, [userId]);
 
     let streak = 0, prevDate = null;
@@ -123,7 +123,7 @@ router.get("/daily/:userId", async (req, res) => {
     const { userId } = req.params;
     const result = await pool.query(`
       SELECT 
-        EXTRACT(DAY FROM attendance_date) AS day,
+        EXTRACT(DAY FROM date) AS day,
         SUM(status::int) AS classesAttended
       FROM attendance a
       JOIN subjects s ON s.id = a.subject_id
