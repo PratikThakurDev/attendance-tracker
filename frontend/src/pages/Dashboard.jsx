@@ -86,6 +86,11 @@ function Dashboard() {
     loadAttendance();
   }, [selectedSubject]);
 
+  const closeSubjectFormAndGoDashboard = () => {
+    setSubjectFormModalOpen(false);
+    setCurrentPage("dashboard");
+  };
+
   const handleSubjectFormSuccess = (subject) => {
     setSummary((prev) => {
       if (editingSubject) {
@@ -183,10 +188,13 @@ function Dashboard() {
 
       <SubjectFormModal
         isOpen={subjectFormModalOpen}
-        onClose={() => setSubjectFormModalOpen(false)}
+        onClose={closeSubjectFormAndGoDashboard}
         userId={userId}
         subject={editingSubject}
-        onSuccess={handleSubjectFormSuccess}
+        onSuccess={(subject) => {
+          handleSubjectFormSuccess(subject);
+          closeSubjectFormAndGoDashboard();
+        }}
         onDelete={handleDeleteSubject}
         addSubject={addSubject}
         updateSubject={updateSubject}
