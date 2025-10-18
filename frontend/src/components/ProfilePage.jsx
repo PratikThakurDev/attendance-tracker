@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import jwtDecode from "jwt-decode";
-import { User, Mail, Calendar, Lock, Trash2, Download } from "lucide-react";
+import { User, Mail, Calendar, Lock, Trash2} from "lucide-react";
+import { changePassword, deleteAccount} from "../utils/api";
+import { useNavigate } from "react-router-dom";
 
 function ProfilePage() {
+  const navigate = useNavigate();
+  const [userId, setUserId] = useState(null);
   const [userInfo, setUserInfo] = useState({
     name: "",
     email: "",
@@ -14,12 +18,16 @@ function ProfilePage() {
     new: "",
     confirm: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
         const decoded = jwtDecode(token);
+        setUserId(decoded.id);
         setUserInfo({
           name: decoded.name || "User",
           email: decoded.email || "",
@@ -36,33 +44,74 @@ function ProfilePage() {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    
     if (passwords.new !== passwords.confirm) {
       alert("New passwords don't match!");
       return;
     }
-    // TODO: Implement change password API call
-    alert("Password change functionality coming soon!");
-  };
 
-  const handleDeleteAccount = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted."
-      )
-    ) {
-      // TODO: Implement delete account API call
-      alert("Delete account functionality coming soon!");
+    if (passwords.new.length < 6) {
+      alert("New password must be at least 6 characters long");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await changePassword(userId, passwords.current, passwords.new);
+      alert("Password changed successfully!");
+      setPasswords({ current: "", new: "", confirm: "" });
+      setShowChangePassword(false);
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to change password");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleExportData = () => {
-    // TODO: Implement data export
-    alert("Export data functionality coming soon!");
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      alert("Please enter your password to confirm deletion");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await deleteAccount(userId, deletePassword);
+      alert("Account deleted successfully");
+      localStorage.clear();
+      navigate("/login");
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to delete account");
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    setLoading(true);
+    try {
+      const blob = await exportAttendanceCSV(userId);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `attendance_${Date.now()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      alert("Attendance data exported successfully!");
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to export data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Profile Header */}
       <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-6">
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-[#1fd6c1]/20 flex items-center justify-center">
@@ -84,12 +133,10 @@ function ProfilePage() {
         </div>
       </div>
 
-      {/* Account Settings */}
       <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Account Settings</h3>
         
         <div className="space-y-4">
-          {/* Change Password */}
           <div className="border-b border-gray-700 pb-4">
             <button
               onClick={() => setShowChangePassword(!showChangePassword)}
@@ -111,11 +158,12 @@ function ProfilePage() {
                 />
                 <input
                   type="password"
-                  placeholder="New Password"
+                  placeholder="New Password (min 6 characters)"
                   value={passwords.new}
                   onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
                   className="w-full p-2 rounded-lg bg-[#0e1117] border border-gray-600 text-white"
                   required
+                  minLength={6}
                 />
                 <input
                   type="password"
@@ -127,32 +175,18 @@ function ProfilePage() {
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#1fd6c1] text-black rounded-lg hover:bg-[#17b9a9] font-semibold"
+                  disabled={loading}
+                  className="px-4 py-2 bg-[#1fd6c1] text-black rounded-lg hover:bg-[#17b9a9] font-semibold disabled:opacity-50"
                 >
-                  Update Password
+                  {loading ? "Updating..." : "Update Password"}
                 </button>
               </form>
             )}
           </div>
 
-          {/* Export Data */}
-          <div className="border-b border-gray-700 pb-4">
-            <button
-              onClick={handleExportData}
-              className="flex items-center gap-2 text-white hover:text-[#1fd6c1] transition-colors"
-            >
-              <Download size={18} />
-              <span>Export My Data</span>
-            </button>
-            <p className="text-sm text-gray-400 mt-1 ml-6">
-              Download all your attendance data as CSV
-            </p>
-          </div>
-
-          {/* Delete Account */}
           <div>
             <button
-              onClick={handleDeleteAccount}
+              onClick={() => setShowDeleteModal(true)}
               className="flex items-center gap-2 text-red-400 hover:text-red-500 transition-colors"
             >
               <Trash2 size={18} />
@@ -165,7 +199,43 @@ function ProfilePage() {
         </div>
       </div>
 
-      {/* App Info */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#18181b] rounded-lg p-6 max-w-md w-full border border-red-600/50">
+            <h2 className="text-xl font-semibold mb-3 text-white">Delete Account</h2>
+            <p className="text-gray-400 mb-4">
+              This action cannot be undone. All your data including subjects, attendance records, and timetable will be permanently deleted.
+            </p>
+            <input
+              type="password"
+              placeholder="Enter your password to confirm"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className="w-full p-2 mb-4 rounded-lg bg-[#0e1117] border border-gray-600 text-white"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletePassword("");
+                }}
+                className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-800 text-white"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 text-white disabled:opacity-50"
+              >
+                {loading ? "Deleting..." : "Delete Account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">About AttendEase</h3>
         <p className="text-gray-400 text-sm">

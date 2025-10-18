@@ -116,3 +116,23 @@ export const clearTimetable = async (userId) => {
   );
   return data;
 };
+
+export const changePassword = async (userId, currentPassword, newPassword) => {
+  const { data } = await axios.put(
+    `${API_BASE}/user/change-password/${userId}`,
+    { currentPassword, newPassword },
+    getHeaders()
+  );
+  return data;
+};
+
+export const deleteAccount = async (userId, password) => {
+  const { data } = await axios.delete(
+    `${API_BASE}/user/delete-account/${userId}`,
+    {
+      data: { password },
+      ...getHeaders(),
+    }
+  );
+  return data;
+};
