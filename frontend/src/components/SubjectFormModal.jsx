@@ -5,11 +5,9 @@ function SubjectFormModal({
   onClose, 
   userId, 
   onSuccess, 
-  onDelete, 
   subject,
   addSubject,  
   updateSubject, 
-  deleteSubject 
 }) {
   const [subjectName, setSubjectName] = useState("");
   const [loading, setLoading] = useState(false);

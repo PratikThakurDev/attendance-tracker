@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import jwtDecode from "jwt-decode";
-import { User, Mail, Calendar, Lock, Trash2} from "lucide-react";
-import { changePassword, deleteAccount} from "../utils/api";
+import { User, Mail, Calendar, Lock, Trash2 } from "lucide-react";
+import { changePassword, deleteAccount } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 
 function ProfilePage() {
@@ -44,7 +44,7 @@ function ProfilePage() {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    
+
     if (passwords.new !== passwords.confirm) {
       alert("New passwords don't match!");
       return;
@@ -88,41 +88,21 @@ function ProfilePage() {
     }
   };
 
-  const handleExportData = async () => {
-    setLoading(true);
-    try {
-      const blob = await exportAttendanceCSV(userId);
-      
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `attendance_${Date.now()}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      alert("Attendance data exported successfully!");
-    } catch (err) {
-      alert(err.response?.data?.error || "Failed to export data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-6">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-[#1fd6c1]/20 flex items-center justify-center">
-            <User size={40} className="text-[#1fd6c1]" />
+      <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1fd6c1]/20 flex items-center justify-center flex-shrink-0">
+            <User size={32} className="text-[#1fd6c1]" />
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-1">{userInfo.name}</h2>
-            <div className="flex items-center gap-4 text-gray-400 text-sm">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 break-words">
+              {userInfo.name}
+            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-gray-400 text-xs sm:text-sm">
               <div className="flex items-center gap-1">
                 <Mail size={14} />
-                <span>{userInfo.email}</span>
+                <span className="break-all">{userInfo.email}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar size={14} />
@@ -133,9 +113,11 @@ function ProfilePage() {
         </div>
       </div>
 
-      <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-6">
-        <h3 className="text-xl font-semibold text-white mb-4">Account Settings</h3>
-        
+      <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-4 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-4">
+          Account Settings
+        </h3>
+
         <div className="space-y-4">
           <div className="border-b border-gray-700 pb-4">
             <button
@@ -145,23 +127,27 @@ function ProfilePage() {
               <Lock size={18} />
               <span>Change Password</span>
             </button>
-            
+
             {showChangePassword && (
               <form onSubmit={handleChangePassword} className="mt-4 space-y-3">
                 <input
                   type="password"
                   placeholder="Current Password"
                   value={passwords.current}
-                  onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                  className="w-full p-2 rounded-lg bg-[#0e1117] border border-gray-600 text-white"
+                  onChange={(e) =>
+                    setPasswords({ ...passwords, current: e.target.value })
+                  }
+                  className="w-full p-2 rounded-lg bg-[#0e1117] border border-gray-600 text-white text-sm"
                   required
                 />
                 <input
                   type="password"
                   placeholder="New Password (min 6 characters)"
                   value={passwords.new}
-                  onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                  className="w-full p-2 rounded-lg bg-[#0e1117] border border-gray-600 text-white"
+                  onChange={(e) =>
+                    setPasswords({ ...passwords, new: e.target.value })
+                  }
+                  className="w-full p-2 rounded-lg bg-[#0e1117] border border-gray-600 text-white text-sm"
                   required
                   minLength={6}
                 />
@@ -169,21 +155,22 @@ function ProfilePage() {
                   type="password"
                   placeholder="Confirm New Password"
                   value={passwords.confirm}
-                  onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                  className="w-full p-2 rounded-lg bg-[#0e1117] border border-gray-600 text-white"
+                  onChange={(e) =>
+                    setPasswords({ ...passwords, confirm: e.target.value })
+                  }
+                  className="w-full p-2 rounded-lg bg-[#0e1117] border border-gray-600 text-white text-sm"
                   required
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-[#1fd6c1] text-black rounded-lg hover:bg-[#17b9a9] font-semibold disabled:opacity-50"
+                  className="px-4 py-2 bg-[#1fd6c1] text-black rounded-lg hover:bg-[#17b9a9] font-semibold disabled:opacity-50 text-sm"
                 >
                   {loading ? "Updating..." : "Update Password"}
                 </button>
               </form>
             )}
           </div>
-
           <div>
             <button
               onClick={() => setShowDeleteModal(true)}
@@ -192,7 +179,7 @@ function ProfilePage() {
               <Trash2 size={18} />
               <span>Delete Account</span>
             </button>
-            <p className="text-sm text-gray-400 mt-1 ml-6">
+            <p className="text-xs sm:text-sm text-gray-400 mt-1 ml-6">
               Permanently delete your account and all data
             </p>
           </div>
@@ -200,18 +187,21 @@ function ProfilePage() {
       </div>
 
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-[#18181b] rounded-lg p-6 max-w-md w-full border border-red-600/50">
-            <h2 className="text-xl font-semibold mb-3 text-white">Delete Account</h2>
-            <p className="text-gray-400 mb-4">
-              This action cannot be undone. All your data including subjects, attendance records, and timetable will be permanently deleted.
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#18181b] rounded-lg p-4 sm:p-6 max-w-md w-full border border-red-600/50">
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 text-white">
+              Delete Account
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">
+              This action cannot be undone. All your data including subjects,
+              attendance records, and timetable will be permanently deleted.
             </p>
             <input
               type="password"
               placeholder="Enter your password to confirm"
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
-              className="w-full p-2 mb-4 rounded-lg bg-[#0e1117] border border-gray-600 text-white"
+              className="w-full p-2 mb-4 rounded-lg bg-[#0e1117] border border-gray-600 text-white text-sm"
             />
             <div className="flex justify-end gap-3">
               <button
@@ -219,7 +209,7 @@ function ProfilePage() {
                   setShowDeleteModal(false);
                   setDeletePassword("");
                 }}
-                className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-800 text-white"
+                className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-800 text-white text-sm"
                 disabled={loading}
               >
                 Cancel
@@ -227,7 +217,7 @@ function ProfilePage() {
               <button
                 onClick={handleDeleteAccount}
                 disabled={loading}
-                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 text-white disabled:opacity-50"
+                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 text-white disabled:opacity-50 text-sm"
               >
                 {loading ? "Deleting..." : "Delete Account"}
               </button>
@@ -236,9 +226,11 @@ function ProfilePage() {
         </div>
       )}
 
-      <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-6">
-        <h3 className="text-xl font-semibold text-white mb-4">About AttendEase</h3>
-        <p className="text-gray-400 text-sm">
+      <div className="bg-[#18181b] rounded-xl border border-[#1fd6c1]/30 p-4 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+          About AttendEase
+        </h3>
+        <p className="text-gray-400 text-xs sm:text-sm">
           Version 1.0.0 • Built with React & Node.js
         </p>
       </div>

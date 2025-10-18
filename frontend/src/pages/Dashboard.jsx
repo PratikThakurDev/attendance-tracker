@@ -26,9 +26,7 @@ function Dashboard() {
   const [editingSubject, setEditingSubject] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [attendanceLogs, setAttendanceLogs] = useState([]);
-  const [chartData, setChartData] = useState([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
-  const [loadingAttendance, setLoadingAttendance] = useState(false);
   const [markAttendanceModalOpen, setMarkAttendanceModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -75,38 +73,14 @@ function Dashboard() {
   useEffect(() => {
     if (!selectedSubject) {
       setAttendanceLogs([]);
-      setChartData([]);
       return;
     }
     const loadAttendance = async () => {
       try {
-        setLoadingAttendance(true);
         const logs = await fetchAttendanceBySubject(Number(selectedSubject));
         setAttendanceLogs(logs);
-
-        const dailyMap = {};
-        logs.forEach((log) => {
-          const day = new Date(log.attendance_date).toLocaleDateString(
-            "en-IN",
-            {
-              day: "numeric",
-              month: "short",
-            }
-          );
-          if (!dailyMap[day]) dailyMap[day] = 0;
-          if (log.status) dailyMap[day] += 1;
-        });
-
-        setChartData(
-          Object.keys(dailyMap).map((day) => ({
-            day,
-            classesAttended: dailyMap[day],
-          }))
-        );
       } catch (err) {
         console.error("Error fetching attendance:", err.message);
-      } finally {
-        setLoadingAttendance(false);
       }
     };
     loadAttendance();
@@ -147,11 +121,6 @@ function Dashboard() {
     setSubjectFormModalOpen(true);
   };
 
-  const openEditSubject = () => {
-    setEditingSubject(null);
-    setSubjectFormModalOpen(true);
-  };
-
   const avgAttendance =
     summary.length > 0
       ? (
@@ -177,12 +146,10 @@ function Dashboard() {
           setCurrentPage={(page) => {
             setCurrentPage(page);
             if (page === "addSubject") openAddSubject();
-            if (page === "editSubject") openEditSubject();
           }}
         />
       </div>
 
-      {/* Mobile Hamburger */}
       <div className="lg:hidden absolute top-4 right-4 z-50">
         <button
           className="text-white text-2xl p-2 rounded-md hover:bg-[#1a1a1a]"
@@ -193,7 +160,6 @@ function Dashboard() {
         </button>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40"
@@ -210,13 +176,11 @@ function Dashboard() {
           setCurrentPage={(page) => {
             setCurrentPage(page);
             if (page === "addSubject") openAddSubject();
-            if (page === "editSubject") openEditSubject();
             setSidebarOpen(false);
           }}
         />
       </div>
 
-      {/* Unified Subject Form Modal */}
       <SubjectFormModal
         isOpen={subjectFormModalOpen}
         onClose={() => setSubjectFormModalOpen(false)}
@@ -316,7 +280,6 @@ function Dashboard() {
           </>
         )}
 
-        {/* Edit Subject Page - showing list of subjects */}
         {currentPage === "editSubject" && (
           <div className="p-6 text-white">
             <h2 className="text-2xl font-semibold mb-6">Manage Subjects</h2>
@@ -379,24 +342,6 @@ function Dashboard() {
         onSuccess={async () => {
           const logs = await fetchAttendanceBySubject(Number(selectedSubject));
           setAttendanceLogs(logs);
-          const dailyMap = {};
-          logs.forEach((log) => {
-            const day = new Date(log.attendance_date).toLocaleDateString(
-              "en-IN",
-              {
-                day: "numeric",
-                month: "short",
-              }
-            );
-            if (!dailyMap[day]) dailyMap[day] = 0;
-            if (log.status) dailyMap[day] += 1;
-          });
-          setChartData(
-            Object.keys(dailyMap).map((day) => ({
-              day,
-              classesAttended: dailyMap[day],
-            }))
-          );
           await loadSummary();
         }}
       />
