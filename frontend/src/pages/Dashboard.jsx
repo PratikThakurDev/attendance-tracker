@@ -4,7 +4,7 @@ import TopBar from "../components/Topbar";
 import Card from "../components/Card";
 import SubjectAttendanceCard from "../components/SubjectAttendanceCard";
 import CalendarWidget from "../components/CalendarWidget";
-import LogTable from "../components/LogTable";
+import AllSubjectsAttendanceStatus from "../components/AllSubjectsAttendance.jsx";
 import AddSubjectModal from "../components/AddSubjectModal";
 import MarkAttendanceModal from "../components/MarkAttendanceModal";
 import { fetchSummary, fetchAttendanceBySubject } from "../utils/api";
@@ -258,7 +258,7 @@ useEffect(() => {
           />
 
           <CalendarWidget attendanceLogs={attendanceLogs} />
-          <LogTable logs={attendanceLogs} />
+          <AllSubjectsAttendanceStatus summary={summary} />
         </div>
       </main>
 
