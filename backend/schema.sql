@@ -23,3 +23,13 @@ CREATE TABLE attendance (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (subject_id, date) 
 );
+
+CREATE TABLE timetable (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    day VARCHAR(20) NOT NULL,
+    time_slot VARCHAR(10) NOT NULL,
+    subject_name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, day, time_slot)
+);
