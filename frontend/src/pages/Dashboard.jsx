@@ -8,6 +8,7 @@ import TimetableEditor from "../components/TimeTableEditor";
 import AllSubjectsAttendanceStatus from "../components/AllSubjectsAttendance";
 import SubjectFormModal from "../components/SubjectFormModal";
 import MarkAttendanceModal from "../components/MarkAttendanceModal";
+import ProfilePage from "../components/ProfilePage";
 import {
   fetchSummary,
   fetchAttendanceBySubject,
@@ -114,14 +115,12 @@ function Dashboard() {
   const handleSubjectFormSuccess = (subject) => {
     setSummary((prev) => {
       if (editingSubject) {
-        // Update existing subject - preserve attendance data
         return prev.map((s) =>
           s.id === subject.id?.toString()
             ? { ...s, subject_name: subject.subject_name }
             : s
         );
       } else {
-        // Add new subject - normalize the response
         const normalized = {
           id: subject.id?.toString() ?? "",
           subject_name: subject.subject_name ?? "Unnamed Subject",
@@ -172,7 +171,6 @@ function Dashboard() {
 
   return (
     <div className="flex h-screen bg-[#0e1117] text-white overflow-hidden">
-      {/* Sidebar for large screens */}
       <div className="hidden lg:flex lg:flex-col lg:w-64 lg:min-h-screen ">
         <Sidebar
           currentPage={currentPage}
@@ -236,7 +234,7 @@ function Dashboard() {
         {currentPage === "timeTable" && (
           <TimetableEditor userId={userId} subjects={summary} />
         )}
-        {/* Cards only visible if dashboard is selected */}
+        {currentPage === "profile" && <ProfilePage />}
         {currentPage === "dashboard" && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

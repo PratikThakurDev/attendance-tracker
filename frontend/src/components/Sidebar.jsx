@@ -9,6 +9,7 @@ function Sidebar({ currentPage, setCurrentPage }) {
     { name: "Dashboard", key: "dashboard" },
     { name: "Edit TimeTable", key: "timeTable" },
     { name: "Edit Subject", key: "editSubject" },
+    { name: "Profile", key: "profile" },
   ];
 
   const handleLogout = () => {
