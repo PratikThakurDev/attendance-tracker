@@ -6,8 +6,11 @@ import {
   PolarAngleAxis,
 } from "recharts";
 
-function SubjectAttendanceCard({ selectedSubject }) {
-  if (!selectedSubject) {
+function SubjectAttendanceCard({ selectedSubject, allSubjects = [] }) {
+  // Use selectedSubject or fallback to first subject in allSubjects
+  const subjectToShow = selectedSubject || allSubjects[0];
+
+  if (!subjectToShow) {
     return (
       <div className="bg-[#18181b] p-5 rounded-xl border border-[#1fd6c1]/30 text-center">
         <p>Select a subject to view attendance</p>
@@ -15,7 +18,7 @@ function SubjectAttendanceCard({ selectedSubject }) {
     );
   }
 
-  const { subject_name, present_count, total_classes } = selectedSubject;
+  const { subject_name, present_count, total_classes } = subjectToShow;
   const percentage = total_classes
     ? ((present_count / total_classes) * 100).toFixed(1)
     : 0;
@@ -29,7 +32,6 @@ function SubjectAttendanceCard({ selectedSubject }) {
       </h3>
 
       <div className="relative flex justify-center items-center">
-        {/* Fixed size container wrapping ResponsiveContainer */}
         <div style={{ width: 200, height: 200, position: "relative" }}>
           <ResponsiveContainer>
             <RadialBarChart
@@ -57,7 +59,6 @@ function SubjectAttendanceCard({ selectedSubject }) {
             </RadialBarChart>
           </ResponsiveContainer>
 
-          {/* Place percentage text absolutely inside fixed size container */}
           <span
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-semibold"
             style={{ pointerEvents: "none" }}

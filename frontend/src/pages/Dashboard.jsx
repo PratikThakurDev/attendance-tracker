@@ -3,13 +3,19 @@ import Sidebar from "../components/Sidebar";
 import TopBar from "../components/Topbar";
 import Card from "../components/Card";
 import SubjectAttendanceCard from "../components/SubjectAttendanceCard";
-import CalendarWidget from "../components/CalendarWidget";
+import TimeTable from "../components/CalendarWidget";
 import AllSubjectsAttendanceStatus from "../components/AllSubjectsAttendance";
 import AddSubjectModal from "../components/AddSubjectModal";
 import MarkAttendanceModal from "../components/MarkAttendanceModal";
 import { fetchSummary, fetchAttendanceBySubject } from "../utils/api";
 import jwtDecode from "jwt-decode";
 import { HiOutlineMenu } from "react-icons/hi";
+
+const userTimetable = [
+  { day: "Monday", time: "9:00 - 10:00 AM", subject: "Mathematics" },
+  { day: "Monday", time: "10:00 - 11:00 AM", subject: "Physics" },
+  
+];
 
 function Dashboard() {
   const [userId, setUserId] = useState(null);
@@ -37,34 +43,33 @@ function Dashboard() {
     }
   }, []);
 
-const loadSummary = async () => {
-  if (!userId) return;
-  try {
-    setLoadingSummary(true);
-    const res = await fetchSummary(userId);
-    const normalized = res.map((s) => ({
-      id: s.subject_id?.toString() ?? "",
-      subject_name: s.subject_name ?? "Unnamed Subject",
-      present_count: s.present_count ?? 0,
-      total_classes: s.total_classes ?? 0,
-      attendance_percentage: s.attendance_percentage ?? "0.00",
-    }));
-    setSummary(normalized);
+  const loadSummary = async () => {
+    if (!userId) return;
+    try {
+      setLoadingSummary(true);
+      const res = await fetchSummary(userId);
+      const normalized = res.map((s) => ({
+        id: s.subject_id?.toString() ?? "",
+        subject_name: s.subject_name ?? "Unnamed Subject",
+        present_count: s.present_count ?? 0,
+        total_classes: s.total_classes ?? 0,
+        attendance_percentage: s.attendance_percentage ?? "0.00",
+      }));
+      setSummary(normalized);
 
-    if (!selectedSubject && res.length > 0) {
-      setSelectedSubject(res[0].id?.toString() ?? "");
+      if (!selectedSubject && res.length > 0) {
+        setSelectedSubject(res[0].id?.toString() ?? "");
+      }
+    } catch (err) {
+      console.error("Error fetching summary:", err.message);
+    } finally {
+      setLoadingSummary(false);
     }
-  } catch (err) {
-    console.error("Error fetching summary:", err.message);
-  } finally {
-    setLoadingSummary(false);
-  }
-};
+  };
 
-useEffect(() => {
-  loadSummary();
-}, [userId]);
-
+  useEffect(() => {
+    loadSummary();
+  }, [userId]);
 
   useEffect(() => {
     if (!selectedSubject) {
@@ -255,10 +260,12 @@ useEffect(() => {
             selectedSubject={summary.find(
               (s) => s.id?.toString() === selectedSubject
             )}
+            allSubjects={summary}
           />
 
-          <CalendarWidget attendanceLogs={attendanceLogs} />
+          
           <AllSubjectsAttendanceStatus summary={summary} />
+          <TimeTable />
         </div>
       </main>
 
