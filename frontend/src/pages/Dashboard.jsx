@@ -4,7 +4,7 @@ import TopBar from "../components/Topbar";
 import Card from "../components/Card";
 import SubjectAttendanceCard from "../components/SubjectAttendanceCard";
 import CalendarWidget from "../components/CalendarWidget";
-import AllSubjectsAttendanceStatus from "../components/AllSubjectsAttendance.jsx";
+import AllSubjectsAttendanceStatus from "../components/AllSubjectsAttendance";
 import AddSubjectModal from "../components/AddSubjectModal";
 import MarkAttendanceModal from "../components/MarkAttendanceModal";
 import { fetchSummary, fetchAttendanceBySubject } from "../utils/api";
