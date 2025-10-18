@@ -36,11 +36,9 @@ function SubjectFormModal({
     setError("");
     try {
       if (isEditMode) {
-        // Update existing subject
         const updated = await updateSubject(subject.id, { subject_name: subjectName.trim() });
         onSuccess(updated);
       } else {
-        // Add new subject
         const added = await addSubject(userId, subjectName.trim());
         onSuccess(added);
       }

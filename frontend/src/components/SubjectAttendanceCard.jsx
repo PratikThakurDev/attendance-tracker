@@ -7,7 +7,6 @@ import {
 } from "recharts";
 
 function SubjectAttendanceCard({ selectedSubject, allSubjects = [] }) {
-  // Use selectedSubject or fallback to first subject in allSubjects
   const subjectToShow = selectedSubject || allSubjects[0];
 
   if (!subjectToShow) {

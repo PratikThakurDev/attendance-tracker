@@ -15,8 +15,6 @@ function TimetableEditor({ userId, subjects }) {
       if (!userId) return;
       
       setInitializing(true);
-      
-      // Initialize empty timetable structure
       const initialTimetable = {};
       daysOfWeek.forEach((day) => {
         initialTimetable[day] = {};
@@ -27,8 +25,6 @@ function TimetableEditor({ userId, subjects }) {
       
       try {
         const savedTimetable = await fetchTimetable(userId);
-        
-        // Merge saved data with initial structure
         Object.keys(initialTimetable).forEach(day => {
           Object.keys(initialTimetable[day]).forEach(time => {
             if (savedTimetable[day]?.[time]) {
@@ -36,7 +32,6 @@ function TimetableEditor({ userId, subjects }) {
             }
           });
         });
-        
         setTimetable(initialTimetable);
       } catch (err) {
         console.error("Failed to load timetable:", err);
@@ -78,8 +73,6 @@ function TimetableEditor({ userId, subjects }) {
     setLoading(true);
     try {
       await clearTimetable(userId);
-      
-      // Reset local state
       const emptyTimetable = {};
       daysOfWeek.forEach((day) => {
         emptyTimetable[day] = {};
@@ -105,89 +98,104 @@ function TimetableEditor({ userId, subjects }) {
   }
 
   return (
-    <div className="p-6 text-white">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Edit Timetable</h2>
-        <div className="space-x-3">
-          {!editMode ? (
-            <button
-              onClick={() => setEditMode(true)}
-              className="px-4 py-2 bg-[#1fd6c1] text-black rounded hover:bg-[#17b9a9] font-semibold"
-            >
-              Edit Timetable
-            </button>
-          ) : (
-            <>
+    <div className="max-w-7xl mx-auto">
+      <div className="bg-[#18181b] rounded-t-xl border border-[#1fd6c1]/30 border-b-0 p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-1">Edit Timetable</h2>
+            <p className="text-gray-400 text-sm">Manage your weekly class schedule</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {!editMode ? (
               <button
-                onClick={handleClear}
-                disabled={loading}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                onClick={() => setEditMode(true)}
+                className="px-5 py-2.5 bg-[#1fd6c1] text-black rounded-lg hover:bg-[#17b9a9] font-semibold transition-colors"
               >
-                Clear All
+                Edit Timetable
               </button>
-              <button
-                onClick={() => setEditMode(false)}
-                disabled={loading}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                className="px-4 py-2 bg-[#1fd6c1] text-black rounded hover:bg-[#17b9a9] font-semibold disabled:opacity-50"
-              >
-                {loading ? "Saving..." : "Save"}
-              </button>
-            </>
-          )}
+            ) : (
+              <>
+                <button
+                  onClick={handleClear}
+                  disabled={loading}
+                  className="px-4 py-2.5 bg-red-600/10 border border-red-600 text-red-500 rounded-lg hover:bg-red-600/20 disabled:opacity-50 transition-colors"
+                >
+                  Clear All
+                </button>
+                <button
+                  onClick={() => setEditMode(false)}
+                  disabled={loading}
+                  className="px-4 py-2.5 bg-gray-700/50 border border-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="px-5 py-2.5 bg-[#1fd6c1] text-black rounded-lg hover:bg-[#17b9a9] font-semibold disabled:opacity-50 transition-colors"
+                >
+                  {loading ? "Saving..." : "Save Changes"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-xs">
-          <thead>
-            <tr>
-              <th className="border border-[#1fd6c1]/30 px-2 py-2 bg-[#232d3f]">Day</th>
-              {timeSlots.map((time) => (
-                <th key={time} className="border border-[#1fd6c1]/30 px-2 py-2 bg-[#232d3f]">
-                  {time}
+      <div className="bg-[#18181b] rounded-b-xl border border-[#1fd6c1]/30 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-[#232d3f]">
+                <th className="sticky left-0 z-10 bg-[#232d3f] border-r border-[#1fd6c1]/30 px-4 py-3 text-left font-semibold text-white min-w-[120px]">
+                  Day
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {daysOfWeek.map((day) => (
-              <tr key={day}>
-                <td className="border border-[#1fd6c1]/30 px-2 py-2 font-medium bg-[#232d3f]">
-                  {day}
-                </td>
                 {timeSlots.map((time) => (
-                  <td key={time} className="border border-[#1fd6c1]/30 px-1 py-1">
-                    {editMode ? (
-                      <select
-                        value={timetable[day]?.[time] || ""}
-                        onChange={(e) => handleCellChange(day, time, e.target.value)}
-                        className="w-full bg-[#0e1117] text-white border border-gray-600 rounded px-1 py-1 text-xs"
-                      >
-                        <option value="">-- Free --</option>
-                        {subjects.map((subject) => (
-                          <option key={subject.id} value={subject.subject_name}>
-                            {subject.subject_name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className="text-[#1fd6c1]">
-                        {timetable[day]?.[time] || "-"}
-                      </span>
-                    )}
-                  </td>
+                  <th key={time} className="border-r border-[#1fd6c1]/30 px-3 py-3 text-center font-medium text-gray-300 min-w-[140px]">
+                    {time}
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {daysOfWeek.map((day, dayIndex) => (
+                <tr key={day} className={dayIndex % 2 === 0 ? "bg-[#18181b]" : "bg-[#1a1d24]"}>
+                  <td className="sticky left-0 z-10 border-r border-t border-[#1fd6c1]/30 px-4 py-3 font-medium text-white bg-[#232d3f]">
+                    {day}
+                  </td>
+                  {timeSlots.map((time) => (
+                    <td key={time} className="border-r border-t border-[#1fd6c1]/30 p-2">
+                      {editMode ? (
+                        <select
+                          value={timetable[day]?.[time] || ""}
+                          onChange={(e) => handleCellChange(day, time, e.target.value)}
+                          className="w-full bg-[#0e1117] text-white border border-gray-600 rounded-md px-2 py-2 text-sm focus:outline-none focus:border-[#1fd6c1] transition-colors"
+                        >
+                          <option value="">-- Free --</option>
+                          {subjects.map((subject) => (
+                            <option key={subject.id} value={subject.subject_name}>
+                              {subject.subject_name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="px-2 py-2 text-sm min-h-[40px] flex items-center">
+                          {timetable[day]?.[time] ? (
+                            <span className="text-[#1fd6c1] font-medium">
+                              {timetable[day][time]}
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">-</span>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

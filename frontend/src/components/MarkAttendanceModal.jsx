@@ -16,7 +16,7 @@ function MarkAttendanceModal({ isOpen, onClose, subjectId, userId, onSuccess }) 
 
     try {
       await markAttendance(userId, subjectId, status === "present", date);
-      onSuccess(); // refresh data in dashboard
+      onSuccess();
       onClose();
     } catch (err) {
       setError(err.error || "Failed to mark attendance");

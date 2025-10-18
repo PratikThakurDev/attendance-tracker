@@ -35,9 +35,18 @@ router.post("/login", async (req, res) => {
     const valid = await bcrypt.compare(password, user.rows[0].password);
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
-    const token = jwt.sign({ id: user.rows[0].id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    // Include name in the token payload
+    const token = jwt.sign(
+      { 
+        id: user.rows[0].id,
+        name: user.rows[0].name,    // Add this line
+        email: user.rows[0].email   // Optional: include email too
+      }, 
+      process.env.JWT_SECRET, 
+      {
+        expiresIn: "1d",
+      }
+    );
 
     res.json({ token, user: user.rows[0] });
   } catch (err) {
@@ -45,5 +54,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 });
+
 
 export default router;

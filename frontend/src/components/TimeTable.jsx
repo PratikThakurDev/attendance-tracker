@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchTimetable } from "../utils/api";
 
-// Define timeslots
 const times = [
   "8-9", "9-10", "10-11", "11-12", "12-1", "1-2", "2-3", "3-4", "4-5", "5-6"
 ];
@@ -18,8 +17,7 @@ function Timetable({ userId }) {
       if (!userId) return;
       
       setLoading(true);
-      
-      // Initialize empty structure
+
       const emptyTimetable = {};
       days.forEach((day) => {
         emptyTimetable[day] = {};
@@ -30,8 +28,7 @@ function Timetable({ userId }) {
 
       try {
         const savedTimetable = await fetchTimetable(userId);
-        
-        // Check if timetable has any data
+
         let hasData = false;
         Object.keys(savedTimetable).forEach(day => {
           Object.keys(savedTimetable[day] || {}).forEach(time => {
