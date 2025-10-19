@@ -125,7 +125,7 @@ POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "test@example.com",
+  "email": "test123@example.com",
   "password": "test123"
 }
 
@@ -140,11 +140,11 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:5000/api/user/delete-account/14
+DELETE http://localhost:5000/api/user/delete-account/1
 Content-Type: application/json
 
 {
-  "password": "newpassword123"
+  "password": "test123"
 }
 
 ###
