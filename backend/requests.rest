@@ -54,12 +54,12 @@ GET http://localhost:5000/api/subjects/1
 ###
 
 ### Add New Subject
-POST http://localhost:5000/api/subjects
+POST https://attendance-tracker-4g7o.onrender.com/api/subjects
 Content-Type: application/json
 
 {
-  "user_id": 1,
-  "subject_name": "Mathematics"
+  "user_id": 11,
+  "subject_name": "Physics"
 }
 
 ###
@@ -78,14 +78,14 @@ Content-Type: application/json
 DELETE http://localhost:5000/api/subjects/3
 
 ### Mark Attendance
-POST http://localhost:5000/api/attendance
+POST https://attendance-tracker-4g7o.onrender.com/api/attendance
 Content-Type: application/json
 
 {
-  "student_id": 1,
-  "subject_id": 2,
+  "student_id": 11,
+  "subject_id":14,
   "status": true,
-  "date": "2025-10-18"
+  "date": "2025-09-18"
 }
 
 ###
@@ -109,28 +109,28 @@ GET http://localhost:5000/api/attendance/dashboard-summary/1
 GET http://localhost:5000/api/attendance/daily/1
 
 ### User Signup
-POST http://localhost:5000/api/auth/signup
+POST https://attendance-tracker-4g7o.onrender.com/api/auth/signup
 Content-Type: application/json
 
 {
   "name": "John Doe",
-  "email": "test123@example.com",
+  "email": "test@example.com",
   "password": "test123"
 }
 
 ###
 
 ### User Login
-POST http://localhost:5000/api/auth/login
+POST https://attendance-tracker-4g7o.onrender.com/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "test123@example.com",
+  "email": "test@example.com",
   "password": "test123"
 }
 
 ###
-PUT http://localhost:5000/api/user/change-password/14
+PUT https://attendance-tracker-4g7o.onrender.com/user/change-password/14
 Content-Type: application/json
 
 {
@@ -140,7 +140,7 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:5000/api/user/delete-account/1
+DELETE https://attendance-tracker-4g7o.onrender.com/user/delete-account/1
 Content-Type: application/json
 
 {
