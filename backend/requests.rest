@@ -114,7 +114,7 @@ Content-Type: application/json
 
 {
   "name": "John Doe",
-  "email": "test@example.com",
+  "email": "test123@example.com",
   "password": "test123"
 }
 
@@ -130,7 +130,7 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:5000/api/user/change-password/7
+PUT http://localhost:5000/api/user/change-password/14
 Content-Type: application/json
 
 {
@@ -140,14 +140,11 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:5000/api/user/delete-account/7
+DELETE http://localhost:5000/api/user/delete-account/14
 Content-Type: application/json
 
 {
   "password": "newpassword123"
 }
 
-###
-
-GET http://localhost:5000/api/user/export-attendance/1
 ###
