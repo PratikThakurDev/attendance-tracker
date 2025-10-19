@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import jwtDecode from "jwt-decode";
 import { User, Mail, Calendar, Lock, Trash2 } from "lucide-react";
 import { changePassword, deleteAccount } from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function ProfilePage() {
   const navigate = useNavigate();
@@ -46,23 +47,23 @@ function ProfilePage() {
     e.preventDefault();
 
     if (passwords.new !== passwords.confirm) {
-      alert("New passwords don't match!");
+      toast.error("New passwords don't match!");
       return;
     }
 
     if (passwords.new.length < 6) {
-      alert("New password must be at least 6 characters long");
+      toast.error("New password must be at least 6 characters long");
       return;
     }
 
     setLoading(true);
     try {
       await changePassword(userId, passwords.current, passwords.new);
-      alert("Password changed successfully!");
+      toast.success("Password changed successfully!");
       setPasswords({ current: "", new: "", confirm: "" });
       setShowChangePassword(false);
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to change password");
+      toast.error(err.response?.data?.error || "Failed to change password");
     } finally {
       setLoading(false);
     }
@@ -70,18 +71,18 @@ function ProfilePage() {
 
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
-      alert("Please enter your password to confirm deletion");
+      toast.error("Please enter your password to confirm deletion");
       return;
     }
 
     setLoading(true);
     try {
       await deleteAccount(userId, deletePassword);
-      alert("Account deleted successfully");
+      toast.success("Account deleted successfully");
       localStorage.clear();
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to delete account");
+      toast.error(err.response?.data?.error || "Failed to delete account");
     } finally {
       setLoading(false);
       setShowDeleteModal(false);

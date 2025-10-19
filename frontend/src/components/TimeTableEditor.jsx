@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { fetchTimetable, saveTimetable, clearTimetable } from "../utils/api";
+import { toast } from "react-toastify";
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const timeSlots = ["8-9", "9-10", "10-11", "11-12", "12-1", "1-2", "2-3", "3-4", "4-5", "5-6"];
+const timeSlots = [
+  "8-9", "9-10", "10-11", "11-12",
+  "12-1", "1-2", "2-3", "3-4", "4-5", "5-6"
+];
 
 function TimetableEditor({ userId, subjects }) {
   const [timetable, setTimetable] = useState({});
@@ -13,7 +17,7 @@ function TimetableEditor({ userId, subjects }) {
   useEffect(() => {
     const loadTimetable = async () => {
       if (!userId) return;
-      
+
       setInitializing(true);
       const initialTimetable = {};
       daysOfWeek.forEach((day) => {
@@ -22,7 +26,7 @@ function TimetableEditor({ userId, subjects }) {
           initialTimetable[day][time] = "";
         });
       });
-      
+
       try {
         const savedTimetable = await fetchTimetable(userId);
         Object.keys(initialTimetable).forEach(day => {
@@ -40,7 +44,7 @@ function TimetableEditor({ userId, subjects }) {
         setInitializing(false);
       }
     };
-    
+
     loadTimetable();
   }, [userId]);
 
@@ -58,18 +62,20 @@ function TimetableEditor({ userId, subjects }) {
     setLoading(true);
     try {
       await saveTimetable(userId, timetable);
-      alert("Timetable saved successfully!");
+      toast.success("Timetable saved successfully!");  // success toast
       setEditMode(false);
     } catch (err) {
-      alert("Failed to save timetable: " + (err.message || "Unknown error"));
+      toast.error("Failed to save timetable: " + (err.message || "Unknown error"));  // error toast
     } finally {
       setLoading(false);
     }
   };
 
   const handleClear = async () => {
+    // Using window.confirm for blocking confirmation.
+    // To implement a toast-based confirmation, use a modal instead.
     if (!window.confirm("Clear entire timetable?")) return;
-    
+
     setLoading(true);
     try {
       await clearTimetable(userId);
@@ -81,9 +87,9 @@ function TimetableEditor({ userId, subjects }) {
         });
       });
       setTimetable(emptyTimetable);
-      alert("Timetable cleared successfully!");
+      toast.success("Timetable cleared successfully!");  // success toast
     } catch (err) {
-      alert("Failed to clear timetable: " + (err.message || "Unknown error"));
+      toast.error("Failed to clear timetable: " + (err.message || "Unknown error"));  // error toast
     } finally {
       setLoading(false);
     }
@@ -96,7 +102,6 @@ function TimetableEditor({ userId, subjects }) {
       </div>
     );
   }
-
   return (
     <div className="max-w-7xl mx-auto">
       <div className="bg-[#18181b] rounded-t-xl border border-[#1fd6c1]/30 border-b-0 p-6">
