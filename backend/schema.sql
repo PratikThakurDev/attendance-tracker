@@ -18,7 +18,7 @@ CREATE TABLE subjects (
 CREATE TABLE attendance (
     id SERIAL PRIMARY KEY,
     subject_id INT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
-    student_id INT NOT NULL REFERENCES students(id) ON DELETE CASCADE, -- new column with foreign key
+    student_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- new column with foreign key
     date DATE NOT NULL,
     status BOOLEAN NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

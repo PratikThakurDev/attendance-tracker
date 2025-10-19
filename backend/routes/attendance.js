@@ -17,7 +17,6 @@ router.post(
       .withMessage("Date must be valid (YYYY-MM-DD)"),
   ],
   async (req, res) => {
-    console.log("POST /attendance called with:", req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ error: errors.array()[0].msg });
@@ -35,7 +34,6 @@ router.post(
       );
       res.json(result.rows[0]);
     } catch (err) {
-      console.error("Attendance POST error:", err);
       res.status(500).json({ error: err.message });
     }
   }
@@ -58,7 +56,6 @@ router.get(
       );
       res.json(result.rows);
     } catch (err) {
-      console.error("Attendance POST error:", err);
       res.status(500).json({ error: err.message });
     }
   }
@@ -98,7 +95,6 @@ router.get(
       );
       res.json(result.rows);
     } catch (err) {
-      console.error("Attendance POST error:", err);
       res.status(500).json({ error: err.message });
     }
   }
