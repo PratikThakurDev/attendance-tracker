@@ -4,8 +4,8 @@ import SignUpForm from "./pages/signUpForm";
 import LoginForm from "./pages/loginForm";
 import Dashboard from "./pages/Dashboard";
 import { setAuthToken } from "./utils/api";
+import { ToastContainer } from "react-toastify";
 
-// ✅ PrivateRoute component
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" replace />;
@@ -18,6 +18,8 @@ function App() {
   }, []);
 
   return (
+    <>
+    <ToastContainer />
     <Router>
       <Routes>
         <Route path="/" element={<LoginForm />} />
@@ -33,6 +35,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+    </>
   );
 }
 

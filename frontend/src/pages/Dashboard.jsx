@@ -18,6 +18,8 @@ import {
 } from "../utils/api";
 import jwtDecode from "jwt-decode";
 import { HiOutlineMenu } from "react-icons/hi";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Dashboard() {
   const [userId, setUserId] = useState(null);
@@ -224,7 +226,11 @@ function Dashboard() {
                 title="Highest Attendance"
                 value={
                   summary.length > 0
-                    ? `${Math.max(...summary.map((s) => parseFloat(s.attendance_percentage || 0)))}%`
+                    ? `${Math.max(
+                        ...summary.map((s) =>
+                          parseFloat(s.attendance_percentage || 0)
+                        )
+                      )}%`
                     : "0%"
                 }
                 subtitle="Top Subject"
@@ -265,8 +271,10 @@ function Dashboard() {
                 <button
                   className="px-3 sm:px-4 py-2 rounded-lg bg-[#1fd6c1] text-black font-semibold text-sm sm:text-base"
                   onClick={() => {
-                    if (!selectedSubject)
-                      return alert("Select a subject first");
+                    if (!selectedSubject) {
+                      toast.warn("Please select a subject first");
+                      return;
+                    }
                     setMarkAttendanceModalOpen(true);
                   }}
                 >
@@ -313,16 +321,49 @@ function Dashboard() {
                       </button>
                       <button
                         onClick={async () => {
-                          if (
-                            window.confirm(
-                              `Delete subject "${subject.subject_name}"?`
-                            )
-                          ) {
+                          const confirmed = await new Promise((resolve) => {
+                            toast.info(
+                              <div>
+                                <p>
+                                  Are you sure you want to delete "
+                                  {subject.subject_name}"?
+                                </p>
+                                <div className="mt-2 flex justify-end gap-2">
+                                  <button
+                                    className="bg-red-600 px-3 py-1 rounded text-white"
+                                    onClick={() => {
+                                      resolve(true);
+                                      toast.dismiss();
+                                    }}
+                                  >
+                                    Yes
+                                  </button>
+                                  <button
+                                    className="bg-gray-600 px-3 py-1 rounded text-white"
+                                    onClick={() => {
+                                      resolve(false);
+                                      toast.dismiss();
+                                    }}
+                                  >
+                                    No
+                                  </button>
+                                </div>
+                              </div>,
+                              {
+                                autoClose: false,
+                                closeOnClick: false,
+                                draggable: false,
+                                closeButton: false,
+                              }
+                            );
+                          });
+                          if (confirmed) {
                             try {
                               await deleteSubject(subject.id);
                               handleDeleteSubject(subject.id);
+                              toast.success("Subject deleted");
                             } catch (err) {
-                              alert(
+                              toast.error(
                                 "Failed to delete subject: " +
                                   (err.message || "Unknown error")
                               );

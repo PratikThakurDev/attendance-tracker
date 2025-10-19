@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { login } from "../utils/api.js";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function LoginForm() {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -13,15 +14,15 @@ function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
     try {
       const data = await login(form);
       localStorage.setItem("token", data.token);
-      alert("Login successful!");
-      navigate("/dashboard"); 
+
+      toast.success("Login successful!");
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || "Login failed. Please try again.");
     }
   };
 
@@ -48,8 +49,6 @@ function LoginForm() {
             className="w-full p-2 rounded bg-[#232d3f] border border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-[#26c6f9]"
           />
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-
           <button
             type="submit"
             className="w-full py-2 bg-[#12adbb] rounded hover:bg-[#1fd6c1] text-white font-semibold transition"
@@ -65,6 +64,7 @@ function LoginForm() {
           </a>
         </p>
       </div>
+      
     </div>
   );
 }
